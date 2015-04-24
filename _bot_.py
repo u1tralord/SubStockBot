@@ -1,18 +1,24 @@
 import praw
 import argparse
+import json
+import os
+import re
 from pprint import pprint
+
+config = open("profile.config")
+config = json.load(config)
 
 r = praw.Reddit("Subreddit stock bot. More info at /r/subredditstockmarket. "
                 "Created by u/u1tralord, u/Obzoen, and u/CubeMaster7  v: 0.0")
 
 # Reads the password from the command line so it isn't here in plaintext
-parser = argparse.ArgumentParser(description='Start the StockBot')
-parser.add_argument('password', type=str, help='password')
-args = parser.parse_args()
+#parser = argparse.ArgumentParser(description='Start the StockBot')
+#parser.add_argument('password', type=str, help='password')
+#args = parser.parse_args()
 
 # Log into the Reddit API
 USERNAME = "SubStockBot"
-PASSWORD = args.password
+PASSWORD = config["password"]
 r.login(USERNAME, PASSWORD)
 
 # Get subreddit mods for verification purposes
@@ -44,11 +50,11 @@ just be the comment that mentioned the bot)
 '''
 
 
-def buy(args):
+def buy(args, comment):
     print("BUY TEST: " + + str(args))
 
 
-def sell(args):
+def sell(args, comment):
     print("SELL TEST: " + str(args))
 
 commands = {
@@ -63,8 +69,9 @@ def is_command(command_args):
 
 # Reads all comments the bot was mentioned in and parses for a command
 for post in r.get_mentions():
-    #pprint(vars(post))
+    pprint(vars(post))
     command_arguments = get_command_args(post)
     if is_command(command_arguments):
-        commands[command_arguments[0]](command_arguments)
+        commands[command_arguments[0]](command_arguments, post)
     print(command_arguments)
+    
