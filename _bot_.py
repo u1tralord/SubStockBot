@@ -7,12 +7,12 @@ r = praw.Reddit("Subreddit stock bot. More info at /r/subredditstockmarket. "
 
 # Reads the password from the command line so it isn't here in plaintext
 parser = argparse.ArgumentParser(description='Start the StockBot')
-parser.add_argument('password', type=str, help='password')
+#parser.add_argument('password', type=str, help='password')
 args = parser.parse_args()
 
 # Log into the Reddit API
 USERNAME = "SubStockBot"
-PASSWORD = args.password;
+PASSWORD = "subr3dd1tst0ckm4rk3t";
 r.login(USERNAME, PASSWORD)
 
 # Get subreddit mods for verification purposes
@@ -28,7 +28,9 @@ def get_command_args(comment):
     # Removes a section from the string up to the end of the username mention
     string_after_username_call = comment.body[command_position+len("/u/"+USERNAME):]
     # Removed any text after the end of the current line and splits the remaining text by spacing
-    user_commands = string_after_username_call[:-len(string_after_username_call)+string_after_username_call.find("\n")].strip().split(" ")
+    # Ehh, it works. Ugly, but it works
+    # \r is necessary for unix (which the bot is running on) and \n for windows
+    user_commands = string_after_username_call.strip().strip("\r").strip("\n").split(" ")
     return user_commands
 
 
@@ -43,11 +45,11 @@ just be the comment that mentioned the bot)
 
 
 def buy(args):
-    print("BUY TEST: " + args)
+    print("BUY TEST: " + + str(args))
 
 
 def sell(args):
-    print("BUY TEST: " + args)
+    print("SELL TEST: " + str(args))
 
 commands = {
     "buy": buy,
@@ -61,8 +63,8 @@ def is_command(command_args):
 
 # Reads all comments the bot was mentioned in and parses for a command
 for post in r.get_mentions():
+    #pprint(vars(post))
     command_arguments = get_command_args(post)
     if is_command(command_arguments):
-        commands[command_arguments[0]]()
-        print(command_arguments)
-    #pprint(vars(comment))
+        commands[command_arguments[0]](command_arguments)
+    print(command_arguments)
