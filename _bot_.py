@@ -7,12 +7,12 @@ r = praw.Reddit("Subreddit stock bot. More info at /r/subredditstockmarket. "
 
 # Reads the password from the command line so it isn't here in plaintext
 parser = argparse.ArgumentParser(description='Start the StockBot')
-#parser.add_argument('password', type=str, help='password')
+parser.add_argument('password', type=str, help='password')
 args = parser.parse_args()
 
 # Log into the Reddit API
 USERNAME = "SubStockBot"
-PASSWORD = "subr3dd1tst0ckm4rk3t";
+PASSWORD = args.password
 r.login(USERNAME, PASSWORD)
 
 # Get subreddit mods for verification purposes
