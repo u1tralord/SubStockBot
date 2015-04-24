@@ -1,0 +1,3 @@
+# Ignore files used for running the bot
+*.bat
+*.sh
