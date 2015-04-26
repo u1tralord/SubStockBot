@@ -3,9 +3,12 @@ import sys
 import praw
 import argparse
 import json
+import time
 import os
 import re
 from pprint import pprint
+
+#pprint(vars(post))
 
 config = open("profile.config")
 config = json.load(config)
@@ -17,7 +20,7 @@ r = praw.Reddit("Subreddit stock bot. More info at /r/subredditstockmarket. "
 con = sqlite.connect('StockBotData.db')
 
 # Log into the Reddit API
-USERNAME = "SubStockBot"
+USERNAME = config["username"]
 PASSWORD = config["password"]
 r.login(USERNAME, PASSWORD)
 
@@ -74,26 +77,27 @@ commands = {
 
 # Returns if the arguments are able to be processed as a command
 def is_command(command_args):
-    return command_args[0] in commands
+    return command_args[0].lower() in commands
 
 # Reads all comments the bot was mentioned in and parses for a command
 with con:
     cur = con.cursor()
-    for post in r.get_mentions():
-        ##
-        ## These next two lines are the broken part. It needs to check if the id exists in the processed_posts table of the db
-        ##
-        cur.execute("SELECT id FROM processed_posts WHERE id="+post.id)
-        if cur.fetchone() is None:
-            # pprint(vars(post))
-            command_arguments = get_command_args(post)
-            if is_command(command_arguments):
-                # Run the command that matches the first argument in the comment. Ex: Buy, sell, etc
-                commands[command_arguments[0].lower()](command_arguments, post)
-            # print(command_arguments)
+    while True:
+        print("Searching....")
+        for post in r.get_mentions():
+            # Check to see if the post has already been processed
+            cur.execute("SELECT COUNT(*) FROM processed_posts WHERE id='"+post.id+"'")
+            if cur.fetchone()[0] < 1:
+                print(post.body)
 
-            # Store the post's ID so it doesnt re-run the post's request
-            cur.execute('''INSERT INTO processed_posts(id) VALUES(:id)''', {'id': post.id})
-            con.commit()
+                # Store the post's ID so it doesnt re-run the post's request
+                cur.execute('''INSERT INTO processed_posts(id) VALUES(:id)''', {'id': post.id})
+                con.commit()
+
+                command_arguments = get_command_args(post)
+                if is_command(command_arguments):
+                    # Run the command that matches the first argument in the comment. Ex: Buy, sell, etc
+                    commands[command_arguments[0].lower()](command_arguments, post)
+        time.sleep(10)
 
 con.close()
