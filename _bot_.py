@@ -58,20 +58,25 @@ just be the comment that mentioned the bot)
 
 def buy(args, comment):
     print("BUY TEST: " + + str(args))
+    if len(args) >= 4:
+            comment.reply("You just tried to buy {} of {} stock for {}".format(args[1], args[2], args[3]))
 
 
 def sell(args, comment):
     print("SELL TEST: " + str(args))
+    if len(args) >= 4:
+        comment.reply("You just tried to sell {} of {} stock for {}".format(args[1], args[2], args[3]))
 
 
-def test(args, comment):
-    print("Secret Test!")
-    comment.reply("args" + str(args))
+def get_stats(args, comment):
+    print("STAT TEST: " + str(args))
+    if len(args) >= 2:
+        comment.reply("You just tried to get the latest statistics for  {} stocks".format(args[1]))
 
 commands = {
     "buy": buy,
     "sell": sell,
-    "secretTest": test
+    "info": get_stats
 }
 
 
@@ -83,7 +88,6 @@ def is_command(command_args):
 with con:
     cur = con.cursor()
     while True:
-        print("Searching....")
         for post in r.get_mentions():
             # Check to see if the post has already been processed
             cur.execute("SELECT COUNT(*) FROM processed_posts WHERE id='"+post.id+"'")
