@@ -1,3 +1,5 @@
+import sqlite3 as sqlite
+import sys
 import praw
 import argparse
 import json
@@ -11,10 +13,8 @@ config = json.load(config)
 r = praw.Reddit("Subreddit stock bot. More info at /r/subredditstockmarket. "
                 "Created by u/u1tralord, u/Obzoen, and u/CubeMaster7  v: 0.0")
 
-# Reads the password from the command line so it isn't here in plaintext
-#parser = argparse.ArgumentParser(description='Start the StockBot')
-#parser.add_argument('password', type=str, help='password')
-#args = parser.parse_args()
+# Create a connection to the main database to store processed post's IDs
+con = sqlite.connect('StockBotData.db')
 
 # Log into the Reddit API
 USERNAME = "SubStockBot"
@@ -40,6 +40,9 @@ def get_command_args(comment):
     return user_commands
 
 
+def replyComment(comment, message):
+    print(message)
+
 '''
 This is going to be where most of the processing is done. So far its just a skeleton of the end result, but this is the
 basic idea. As long as the function is here, and is in the dictionary "commands", the code should work.
@@ -57,9 +60,15 @@ def buy(args, comment):
 def sell(args, comment):
     print("SELL TEST: " + str(args))
 
+
+def test(args, comment):
+    print("Secret Test!")
+    comment.reply("args" + str(args))
+
 commands = {
     "buy": buy,
-    "sell": sell
+    "sell": sell,
+    "secretTest": test
 }
 
 
@@ -68,10 +77,23 @@ def is_command(command_args):
     return command_args[0] in commands
 
 # Reads all comments the bot was mentioned in and parses for a command
-for post in r.get_mentions():
-    pprint(vars(post))
-    command_arguments = get_command_args(post)
-    if is_command(command_arguments):
-        commands[command_arguments[0]](command_arguments, post)
-    print(command_arguments)
-    
+with con:
+    cur = con.cursor()
+    for post in r.get_mentions():
+        ##
+        ## These next two lines are the broken part. It needs to check if the id exists in the processed_posts table of the db
+        ##
+        cur.execute("SELECT id FROM processed_posts WHERE id="+post.id)
+        if cur.fetchone() is None:
+            # pprint(vars(post))
+            command_arguments = get_command_args(post)
+            if is_command(command_arguments):
+                # Run the command that matches the first argument in the comment. Ex: Buy, sell, etc
+                commands[command_arguments[0].lower()](command_arguments, post)
+            # print(command_arguments)
+
+            # Store the post's ID so it doesnt re-run the post's request
+            cur.execute('''INSERT INTO processed_posts(id) VALUES(:id)''', {'id': post.id})
+            con.commit()
+
+con.close()
