@@ -1,7 +1,5 @@
 import sqlite3 as sqlite
-import sys
 import praw
-import argparse
 import json
 import time
 import os
@@ -14,7 +12,7 @@ from pprint import pprint
 config = open("profile.config")
 config = json.load(config)
 
-r = praw.Reddit("Subreddit stock bot. More info at /r/subredditstockmarket. "
+r = praw.Reddit("Subreddit stock monitor. More info at /r/subredditstockmarket. "
                 "Created by u/u1tralord, u/Obzoen, and u/CubeMaster7  v: 0.0")
 
 # Log into the Reddit API
@@ -27,6 +25,14 @@ MODS = r.get_moderators(r.get_subreddit('subredditstockmarket'))
 
 # Path to the database that stores user data and Subreddit metrics
 MAIN_DB_FILE = 'db/StockBotData.db'
+
+# Footer added on to the end of all comments
+FOOTER = "\n" \
+         "---------------------------------------------------------\n" \
+         "^(I am just a bot)  \n" \
+         "^(Please visit /r/subredditstockmarket for more info!)  \n" \
+         "^(If I messed up your request, please reply to this comment)  \n" \
+         "^(with /undo withing the next hour)  \n"
 
 # Extracts a list of words separated by spaces following the username mention to the end of the line
 def get_command_args(comment):
@@ -53,12 +59,12 @@ def repeat_task(delay, action, actionargs=()):
 def reply_comment(comment, message):
     try:
         print(message)
-        comment.reply(message)
+        comment.reply(message + FOOTER)
     except praw.errors.RateLimitExceeded as error:
         print("\tRate Limit Exceded")
         print('\tSleeping for %d seconds' % error.sleep_time)
         # time.sleep(error.sleep_time)
-        Timer(error.sleep_time, reply_comment, (comment, message)).start()
+        Timer(error.sleep_time, reply_comment, (comment, message + FOOTER)).start()
 
 '''
 This is going to be where most of the processing is done. So far its just a skeleton of the end result, but this is the
