@@ -26,7 +26,7 @@ r.login(USERNAME, PASSWORD)
 MODS = r.get_moderators(r.get_subreddit('subredditstockmarket'))
 
 # Path to the database that stores user data and Subreddit metrics
-MAIN_DB_FILE = 'StockBotData.db'
+MAIN_DB_FILE = 'db/StockBotData.db'
 
 # Extracts a list of words separated by spaces following the username mention to the end of the line
 def get_command_args(comment):
