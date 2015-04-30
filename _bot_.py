@@ -6,11 +6,14 @@ import os
 import re
 from threading import Timer
 from pprint import pprint
+from wrappers.DB import DB
 
 #pprint(vars(post))
 
 config = open("profile.config")
 config = json.load(config)
+
+db = DB()
 
 r = praw.Reddit("Subreddit stock monitor. More info at /r/subredditstockmarket. "
                 "Created by u/u1tralord, u/Obzoen, and u/CubeMaster7  v: 0.0")
@@ -23,8 +26,7 @@ r.login(USERNAME, PASSWORD)
 # Get subreddit mods for commands that require mod permissions
 MODS = r.get_moderators(r.get_subreddit('subredditstockmarket'))
 
-# Path to the database that stores user data and Subreddit metrics
-MAIN_DB_FILE = 'db/StockBotData.db'
+
 
 # Footer added on to the end of all comments
 FOOTER = "\n" \
@@ -109,7 +111,7 @@ def respond_to_mentions():
     print("Retrieving Info...")
     for post in r.get_mentions(limit=None):
         # Check to see if the post has already been processed
-        if id_in_database(post.id):
+        if db.id_in_database('processed_posts', post.id):
             print(post.body)
             store_processed_id(post.id)
             
@@ -120,23 +122,12 @@ def respond_to_mentions():
 
 
 # Check to see if the post has already been processed
-def id_in_database(id_val):
-    # Create a connection to the main database to store processed post's IDs
-    con = sqlite.connect(MAIN_DB_FILE)
-    cur = con.cursor()
-    cur.execute("SELECT COUNT(*) FROM processed_posts WHERE id='"+id_val+"'")
-    id_exists = cur.fetchone()[0] < 1
-    con.close()
-    return id_exists
+
 
 
 # Store the post's ID so it doesnt re-run the post's request
 def store_processed_id(id_val):
-    con = sqlite.connect(MAIN_DB_FILE)
-    cur = con.cursor()
-    cur.execute('''INSERT INTO processed_posts(id) VALUES(:id)''', {'id': id_val})
-    con.commit()
-    con.close()
+    db.insert('processed_posts',{'id': id_val})
 
 # Reads all comments the bot was mentioned in and parses for a command
 repeat_task(30, respond_to_mentions, ())
