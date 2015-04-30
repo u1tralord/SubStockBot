@@ -45,7 +45,7 @@ class DB:
                     s = s + "'"
             return s
 
-        if type(where) == list:  #where is an array
+        if type(where) == list:  # where is an array
             if type(where[0]) == list:  #where is a 2d array
                 for statement in where:
                     statement[2] = fix_string(statement[2])
@@ -58,10 +58,8 @@ class DB:
                 where[2] = fix_string(where[2])
             where = ' '.join(where)
         sql = '{0} {1} FROM {2} WHERE {3}'.format(action, fields, table, where)
-        print(sql)
-        self.cur.execute(sql)
-        self.__first = None
-        self.__results = None
+        self.query(sql)
+
 
     def in_db(self, table, field, value):
         where = [field, '=', value]
@@ -75,6 +73,15 @@ class DB:
         keys = fields.keys()
         values = '(' + ','.join(['?'] * len(keys)) + ')'
         sql = 'INSERT INTO {0} (`{1}`) VALUES {2}'.format(table, '`, `'.join(keys), values)
-        self.cur.execute(sql, list(fields.values()))
-        self.con.commit()
+        self.query(sql, list(fields.values()))
+
+    def query(self, sql, params=()):
+        with self.con:
+            try:
+                self.cur.execute(sql, params)
+            except Exception as e:
+                # TODO: add proper error reporting
+                print(e)
+        self.__first = None
+        self.__results = None
 
