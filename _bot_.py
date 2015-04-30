@@ -111,7 +111,7 @@ def respond_to_mentions():
     print("Retrieving Info...")
     for post in r.get_mentions(limit=None):
         # Check to see if the post has already been processed
-        if db.id_in_database('processed_posts', post.id):
+        if not db.id_in_database('processed_posts', post.id):
             print(post.body)
             store_processed_id(post.id)
             
