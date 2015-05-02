@@ -107,11 +107,15 @@ def is_command(command_args):
     return command_args[0].lower() in commands
 
 
+def post_in_database(id):
+    return db.in_db('PROCESSED_POSTS','post_id',id)
+
+
 def respond_to_mentions():
     print("Retrieving Info...")
     for post in r.get_mentions(limit=None):
         # Check to see if the post has already been processed
-        if not db.id_in_database('processed_posts', post.id):
+        if not post_in_database(post.id):
             print(post.body)
             store_processed_id(post.id)
             

@@ -1,11 +1,13 @@
-import sqlite3 as sqlite
-
+import pymysql.cursors
+import json
 
 class DB:
     def __init__(self):
-        # Path to the database that stores user data and Subreddit metrics
-        MAIN_DB_FILE = 'db/StockBotData.db'
-        self.con = sqlite.connect(MAIN_DB_FILE)
+        config = open("db.config")
+        config = json.load(config)
+
+        self.con = pymysql.connect(host=config['host'], user=config['user'],
+                                   password=config['password'], db=config['db'])
         self.cur = self.con.cursor()
         self.__first = None
         self.__results = None
@@ -22,6 +24,14 @@ class DB:
 
     def action(self, table, action, fields=['*'], where='1',
                where_and=True):  # where can be a string, an array of components or an array of array of components
+        """
+
+        :param table: The table to perform the action on
+        :param action:
+        :param fields: default = ['*']. The list of fields that will be selected
+        :param where: default = 1. str,[],(),[[]],(()). Clauses placed in lists or tuples should be in the format (field,operator,value)
+        :param where_and: If true will use AND for multiple where clauses if false will use OR
+        """
         for f in fields:
             if not (f == '*' or f.lower() == 'count(*)'):
                 if not f.startswith('`'):
@@ -30,35 +40,22 @@ class DB:
                     f = f + '`'
         fields = ','.join(fields)
 
-        def fix_string(s):
-            def is_number(str1):
-                try:
-                    float(str1)
-                    return True
-                except ValueError:
-                    return False
-
-            if not is_number(s):
-                if not s.startswith("'"):
-                    s = "'" + s
-                if not s.endswith("'"):
-                    s = s + "'"
-            return s
-
-        if type(where) == list:  # where is an array
-            if type(where[0]) == list:  #where is a 2d array
+        values = []
+        if type(where) == list or type(where) == tuple:  # where is an array
+            if type(where[0]) == list or type(where[0]) == tuple:  # where is a 2d array
+                statements = []
                 for statement in where:
-                    statement[2] = fix_string(statement[2])
-                    statement = ' '.join(statement)
+                    values.append(statement[2])
+                    statements.append(' '.join(statement[:2]) + '%s')
                 if where_and:
-                    where = ' AND '.join(where)
+                    where = ' AND '.join(statements)
                 else:
-                    where = ' OR '.join(where)
+                    where = ' OR '.join(statements)
             else:
-                where[2] = fix_string(where[2])
-            where = ' '.join(where)
+                values.append(where[2])
+                where = ' '.join(where[:2]) + '%s'
         sql = '{0} {1} FROM {2} WHERE {3}'.format(action, fields, table, where)
-        self.query(sql)
+        self.query(sql, values)
 
 
     def in_db(self, table, field, value):
@@ -71,7 +68,15 @@ class DB:
 
     def insert(self, table, fields):
         keys = fields.keys()
-        values = '(' + ','.join(['?'] * len(keys)) + ')'
+        placeholders = []
+        for val in fields.values():
+            if type(val) == str:
+                placeholders.append('%s')
+            elif type(val) == int:
+                placeholders.append('%d')
+            else:
+                placeholders.append('%s')
+        values = '(' + ','.join(placeholders) + ')'
         sql = 'INSERT INTO {0} (`{1}`) VALUES {2}'.format(table, '`, `'.join(keys), values)
         self.query(sql, list(fields.values()))
 
@@ -81,7 +86,7 @@ class DB:
                 self.cur.execute(sql, params)
             except Exception as e:
                 # TODO: add proper error reporting
-                print(e)
+                print('DB-query: ' + str(e))
         self.__first = None
         self.__results = None
 
