@@ -68,14 +68,7 @@ class DB:
 
     def insert(self, table, fields):
         keys = fields.keys()
-        placeholders = []
-        for val in fields.values():
-            if type(val) == str:
-                placeholders.append('%s')
-            elif type(val) == int:
-                placeholders.append('%d')
-            else:
-                placeholders.append('%s')
+        placeholders = ['%s']*len(fields)
         values = '(' + ','.join(placeholders) + ')'
         sql = 'INSERT INTO {0} (`{1}`) VALUES {2}'.format(table, '`, `'.join(keys), values)
         self.query(sql, list(fields.values()))
