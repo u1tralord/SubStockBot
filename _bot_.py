@@ -131,7 +131,7 @@ def respond_to_mentions():
 
 # Store the post's ID so it doesnt re-run the post's request
 def store_processed_id(id_val):
-    db.insert('processed_posts',{'id': id_val})
+    db.insert('PROCESSED_POSTS',{'post_id': id_val})
 
 # Reads all comments the bot was mentioned in and parses for a command
 repeat_task(30, respond_to_mentions, ())

@@ -1,6 +1,7 @@
 import pymysql.cursors
 import json
 
+
 class DB:
     def __init__(self):
         config = open("db.config")
@@ -32,14 +33,16 @@ class DB:
         :param where: default = 1. str,[],(),[[]],(()). Clauses placed in lists or tuples should be in the format (field,operator,value)
         :param where_and: If true will use AND for multiple where clauses if false will use OR
         """
-        for f in fields:
-            if not (f == '*' or f.lower() == 'count(*)'):
-                if not f.startswith('`'):
-                    f = '`' + f
-                if not f.endswith('`'):
-                    f = f + '`'
-        fields = ','.join(fields)
-
+        if (fields):
+            for f in fields:
+                if not (f == '*' or f.lower() == 'count(*)' ):
+                    if not f.startswith('`'):
+                        f = '`' + f
+                    if not f.endswith('`'):
+                        f = f + '`'
+            fields = ','.join(fields)
+        else:
+            fields = ''
         values = []
         if type(where) == list or type(where) == tuple:  # where is an array
             if type(where[0]) == list or type(where[0]) == tuple:  # where is a 2d array
@@ -68,7 +71,7 @@ class DB:
 
     def insert(self, table, fields):
         keys = fields.keys()
-        placeholders = ['%s']*len(fields)
+        placeholders = ['%s'] * len(fields)
         values = '(' + ','.join(placeholders) + ')'
         sql = 'INSERT INTO {0} (`{1}`) VALUES {2}'.format(table, '`, `'.join(keys), values)
         self.query(sql, list(fields.values()))
@@ -83,3 +86,25 @@ class DB:
         self.__first = None
         self.__results = None
 
+
+    def update(self, table, fields, where=1, where_and=True):
+        statement = 'UPDATE {} set'.format(table)
+        sets = []
+        params = []
+        for key, value in fields.items():
+            sets.append('`{}` = %s'.format(key))
+            params.append(value)
+        statement += ','.join(sets)
+        statement += " WHERE " + ' '.join(where)
+        self.query(statement, params)
+
+
+    def get(self, table, fields=['*'], where='1',
+            where_and=True):
+        self.action(table, 'SELECT', fields, where, where_and)
+        return self.get_results()
+
+    def get_single(self, table, fields=['*'], where='1',
+            where_and=True):
+        self.action(table, 'SELECT', fields, where, where_and)
+        return self.get_first()
