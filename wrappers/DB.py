@@ -33,16 +33,17 @@ class DB:
         :param where: default = 1. str,[],(),[[]],(()). Clauses placed in lists or tuples should be in the format (field,operator,value)
         :param where_and: If true will use AND for multiple where clauses if false will use OR
         """
-        if (fields):
-            for f in fields:
-                if not (f == '*' or f.lower() == 'count(*)' ):
-                    if not f.startswith('`'):
-                        f = '`' + f
-                    if not f.endswith('`'):
-                        f = f + '`'
-            fields = ','.join(fields)
-        else:
-            fields = ''
+        if type(fields) == list or type(fields)==tuple:
+            if (fields):
+                for f in fields:
+                    if not (f == '*' or f.lower() == 'count(*)' ):
+                        if not f.startswith('`'):
+                            f = '`' + f
+                        if not f.endswith('`'):
+                            f = f + '`'
+                fields = ','.join(fields)
+            else:
+                fields = ''
         values = []
         if type(where) == list or type(where) == tuple:  # where is an array
             if type(where[0]) == list or type(where[0]) == tuple:  # where is a 2d array

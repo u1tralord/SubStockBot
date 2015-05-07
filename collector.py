@@ -80,5 +80,3 @@ def collect():
         ins['subreddit_id'] = res[5]
         db.insert('changes', ins)
         db.update('SUB_REDDITS',{"quantity_posts":num_posts,"posts_score":score_posts,"quantity_comments":num_comments,"comments_score":score_comments},('id','=',str(res[5])))
-
-collect()
