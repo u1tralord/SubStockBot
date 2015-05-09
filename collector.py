@@ -8,7 +8,7 @@ from wrappers.DB import DB
 
 def get_json(path,after=None):
     url = 'http://www.reddit.com/{}.json?limit=25'.format(path)
-    if (after):
+    if after:
         url += '&after=' + after
     r = requests.get(url, headers={'user-agent': 'sub_stock_bot/0.0.1'})
     data = r.json()
@@ -27,10 +27,10 @@ def get_all(path,start_time,end_time):
                 child = child['data']
                 if start_time < child['created_utc'] < end_time:
                     results.append(child)
-                else:
+                elif child['created_utc'] < end_time:
                     run = False
         except Exception as e:
-           print(e)
+            print(e)
         if not after:
             run = False
     return results
