@@ -4,9 +4,9 @@ import json
 
 class DB:
     def __init__(self):
-        config = open("db.config")
-        config = json.load(config)
-
+        config=''
+        with open("db.config") as f:
+            config = json.load(f)
         self.con = pymysql.connect(host=config['host'], user=config['user'],
                                    password=config['password'], db=config['db'])
         self.cur = self.con.cursor()

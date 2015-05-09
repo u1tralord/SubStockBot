@@ -7,11 +7,12 @@ import re
 from threading import Timer
 from pprint import pprint
 from wrappers.DB import DB
+from market import *
 
 #pprint(vars(post))
-
-config = open("profile.config")
-config = json.load(config)
+config = None
+with open("profile.config") as f:
+    config = json.load(f)
 
 db = DB()
 
@@ -77,17 +78,34 @@ sell, etc. It also is going to need to accept the instance of a comment to which
 just be the comment that mentioned the bot)
 '''
 
+def get_user_id(username):
+    if not db.in_db('USERS','username',username):
+        db.insert('USERS',{"username":username,"kreddits":100})
+    return db.get_single('USERS',['id'],('username','=',username))[0]
+
 
 def buy(args, comment):
-    print("BUY TEST: " + str(args))
     if len(args) >= 4:
-            reply_comment(comment, "You just tried to buy {} of {} stock for {}".format(args[1], args[2], args[3]))
+        print("BUY TEST: " + str(args))
+        username = comment.author.name
+        user_id = get_user_id(username)
+        try:
+            place_buy(args[2],args[1],args[3],user_id)
+            reply_comment(comment, "You just placed a buy offer for {} of {} stock for {}".format(args[1], args[2], args[3]))
+        except ValueError as ve:
+           reply_comment(comment,str(ve))
 
 
 def sell(args, comment):
-    print("SELL TEST: " + str(args))
     if len(args) >= 4:
-        reply_comment(comment, "You just tried to sell {} of {} stock for {}".format(args[1], args[2], args[3]))
+        print("SELL TEST: " + str(args))
+        username = comment.author.name
+        user_id = get_user_id(username)
+        try:
+            place_sell(args[2],args[1],args[3],user_id)
+            reply_comment(comment, "You just placed a sell offer of {} of {} stock for {}".format(args[1], args[2], args[3]))
+        except ValueError as ve:
+            reply_comment(comment,str(ve))
 
 
 def get_stats(args, comment):
@@ -118,7 +136,6 @@ def respond_to_mentions():
         if not post_in_database(post.id):
             print(post.body)
             store_processed_id(post.id)
-            
             command_arguments = get_command_args(post)
             if is_command(command_arguments):
                 # Run the command that matches the first argument in the comment. Ex: Buy, sell, etc
