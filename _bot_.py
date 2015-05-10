@@ -6,7 +6,7 @@ import os
 import re
 from threading import Timer
 from pprint import pprint
-from wrappers.DB import DB
+from wrappers.DB import get_instance
 from market import *
 
 #pprint(vars(post))
@@ -14,7 +14,7 @@ config = None
 with open("profile.config") as f:
     config = json.load(f)
 
-db = DB()
+db = get_instance('bot')
 
 r = praw.Reddit("Subreddit stock monitor. More info at /r/subredditstockmarket. "
                 "Created by u/u1tralord, u/Obzoen, and u/CubeMaster7  v: 0.0")

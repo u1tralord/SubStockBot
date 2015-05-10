@@ -1,7 +1,7 @@
 __author__ = 'alexthomas'
-from wrappers.DB import DB
+from wrappers.DB import get_instance
 
-db = DB()
+db = get_instance('market')
 
 
 def __place_offer(sub_reddit_id, quantity, unit_value, user_id, action):

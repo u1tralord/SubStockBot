@@ -109,3 +109,10 @@ class DB:
             where_and=True):
         self.action(table, 'SELECT', fields, where, where_and)
         return self.get_first()
+
+instances = {}
+
+def get_instance(name='default'):
+    if not name in instances:
+        instances[name]=DB()
+    return instances[name]
