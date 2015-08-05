@@ -2,6 +2,8 @@ import praw
 import json
 from threading import Timer
 from pprint import pprint
+import time
+
 
 #pprint(vars(post))
 config = None
@@ -28,6 +30,8 @@ FOOTER = "\n" \
          "^(with /undo withing the next hour)  \n"
 
 
+current_milli_time = lambda: int(round(time.time()))
+
 # Runs a task at a specified interval.
 #     delay = time in seconds between runs
 #     action = function name to be repeated
@@ -49,9 +53,15 @@ def reply_comment(comment, message):
         Timer(error.sleep_time, reply_comment, (comment, message + FOOTER)).start()
 
 def respond_to_mentions():
+    global lastUpdate
     print("Retrieving Mentions...")
     for post in r.get_mentions(limit=None):
-        pprint(vars(post))
+        if post.created > lastUpdate:
+            reply_comment(post, "Reply Bot")
+        #pprint(vars(post))
+    lastUpdate = current_milli_time()
 
+lastUpdate = current_milli_time()
+print(lastUpdate)
 # Reads all comments the bot was mentioned in and parses for a command
 repeat_task(30, respond_to_mentions, ())
