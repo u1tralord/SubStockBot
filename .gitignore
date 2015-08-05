@@ -1,7 +1,7 @@
 # Ignore files used for running the bot
 *.bat
 *.sh
-*.config
+profile.config
 *.db
 .idea
 test.py
