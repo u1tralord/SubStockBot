@@ -3,4 +3,5 @@
 *.sh
 *.config
 *.db
+.idea
 test.py
