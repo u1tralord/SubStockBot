@@ -6,8 +6,11 @@ from threading import Timer
     All generic functions should be placed here.
 '''
 
-# Returns current time in second from epoch UTC
+# Returns current time in seconds from epoch UTC
 current_utc_time = lambda: int(round(time.time()))
+
+# Returns current time in millis from epoch UTC
+current_utc_time_millis = lambda: int(round(time.time()) * 1000)
 
 # Runs a task at a specified interval.
 #     delay = time in seconds between runs

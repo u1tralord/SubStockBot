@@ -19,6 +19,7 @@ def respond_to_mentions():
                 'utc': current_utc_time()
             })
             command_processor.process_post(post)
+    market.match_offers()
 
 
 # Reads all comments the bot was mentioned in and parses for a command

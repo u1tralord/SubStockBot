@@ -1,5 +1,6 @@
 from wrappers import reddit
 import market
+from user import *
 
 '''
     Command Processing Central
@@ -13,7 +14,9 @@ def process_post(post):
         # Run the command that matches the first argument in the comment. Ex: Buy, sell, etc
         commands[command_args[0].lower()](command_args, post)
     else:
-        reddit.reply_comment(post, "Command not recognized")
+        print('Command not recognized ' + command_args[0].lower())
+        print(str(commands))
+        #reddit.reply_comment(post, "Command not recognized")
 
 # Extracts a list of words separated by spaces following the username mention to the end of the line
 def get_command_args(comment):
@@ -68,7 +71,7 @@ def sell(args, comment):
 
         if unit_bid is not None and quantity is not None:
             try:
-                # market.place_sell(username, stock, quantity, unit_bid)
+                market.place_sell(username, args[2], quantity, unit_bid)
                 reddit.reply_comment(comment, "You just placed an offer to sell for {} of {} stock for {} kreddit each".format(
                     args[1],
                     args[2],
@@ -82,10 +85,25 @@ def get_stats(args, comment):
     if len(args) >= 2:
         reddit.reply_comment(comment, "You just tried to get the latest statistics for  {} stocks".format(args[1]))
 
+def get_profile(args, comment):
+    print("Commenting Profile")
+    username = comment.author.name
+    user = User(username)
+    stocks = user.get_stocks()
+    balance = user.get_balance()
+    table = "Stock Name|Stock Quantity|Stock Value\n" \
+            ":--|--:|--:\n"
+    for stock in stocks:
+        table += "{}|{}|{}\n".format(stock['stock_name'], stock['quantity_owned'], 0)
+
+    profile_comment = username + "\'s Profile\n\n\n" + table
+    reddit.reply_comment(comment, profile_comment)
+
 commands = {
     "buy": buy,
     "sell": sell,
-    "info": get_stats
+    "info": get_stats,
+    "profile": get_profile
 }
 
 # Returns if the arguments are able to be processed as a command

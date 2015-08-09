@@ -1,6 +1,7 @@
 import json
 from wrappers import db as db_wrapper
 from wrappers import reddit
+from wrappers.toolbox import *
 
 db = db_wrapper.get_instance()
 
@@ -12,6 +13,11 @@ db = db_wrapper.get_instance()
         * Add/Remove Stock functions
 '''
 
+whitelist_cache = {
+    'last_updated': current_utc_time(),
+    'subreddits': db.whitelist.find()
+}
+
 # Load the general settings from file
 settings = None
 with open("settings.config") as f:
@@ -21,6 +27,15 @@ class User:
     def __init__(self, username):
         self.username = username
         self.update()
+
+    def get_username(self):
+        return self.username
+
+    def get_balance(self):
+        return self.db_user['balance']
+
+    def get_stocks(self):
+        return self.db_user['stocks']
 
     def update(self):
         db_user = db.users.find_one({'username': self.username})
@@ -36,14 +51,36 @@ class User:
 
     def add_stock(self, stock_name, quantity):
         self.update()
-        stocks = self.db_user['stocks']
-
-        self.db_user['stocks'] = stocks
+        print("Adding '{}' stock to user: {} ".format(stock_name, self.username))
+        if is_whitelisted(stock_name):
+            stock_found = False
+            for stock_entry in self.db_user['stocks']:
+                if stock_entry['stock_name'] == stock_name:
+                    stock_entry['quantity_owned'] = int(stock_entry['quantity_owned']) + quantity
+                    stock_found = True
+            if not stock_found:
+                self.db_user['stocks'].append({
+                    'stock_name': stock_name,
+                    'quantity_owned': quantity
+                })
+        else:
+            raise ValueError('Stock entered is not available for trading')
+        print("Finished adding stocks")
         self.write_db()
 
     def take_stock(self, stock_name, quantity):
         self.update()
-        # take stock
+        print("Taking '{}' stock from user: {} ", stock_name, self.username)
+        if is_whitelisted(stock_name):
+            has_enough_stock = False
+            for stock_entry in self.db_user['stocks']:
+                if stock_entry['stock_name'] == stock_name and int(stock_entry['quantity_owned']) > quantity:
+                    stock_entry['quantity_owned'] = int(stock_entry['quantity_owned']) - quantity
+                    has_enough_stock = True
+            if not has_enough_stock:
+                raise ValueError('Insufficient quantity of stock')
+        else:
+            raise ValueError('Stock entered is not available for trading')
         self.write_db()
 
     def add_kreddit(self, amount):
@@ -76,3 +113,13 @@ def get_permission_level(username):
     if reddit.is_mod(username, settings['mod_list_sub']):
         return 2
     return 1
+
+def update_whitelist():
+    whitelist_cache['subreddits'] = db.whitelist.find()
+
+def is_whitelisted(subreddit):
+    for sub in db.whitelist.find():
+        if sub['subreddit'] == subreddit:
+            return True
+    return False
+
