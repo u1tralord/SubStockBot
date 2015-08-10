@@ -82,7 +82,9 @@ def make_transfer(buy, sale):
             '$set': buy
         }, upsert=False)
 
+    buyer_price = transaction_quantity * float(buy['unit_bid'])
     transaction_price = transaction_quantity * float(sale['unit_bid'])
+    buyer_remainder = transaction_price - buyer_price
 
     if buy['quantity'] == 0:
         delete_offer(buy)
@@ -91,6 +93,7 @@ def make_transfer(buy, sale):
 
     # Send private message -> buyer and seller with transaction info
     seller.add_kreddit(transaction_price)
+    buyer.add_kreddit(buyer_remainder)
     buyer.add_stock(sale['stock_name'], transaction_quantity)
     print("Sale {} -> {} for {} of {} stock at {} each (Total: {})".format(seller.get_username(),
                                                                            buyer.get_username(),
