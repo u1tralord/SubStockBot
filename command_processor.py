@@ -16,7 +16,7 @@ def process_post(post):
     else:
         print('Command not recognized ' + command_args[0].lower())
         print(str(commands))
-        #reddit.reply_comment(post, "Command not recognized")
+        reddit.reply_comment(post, "Command not recognized")
 
 # Extracts a list of words separated by spaces following the username mention to the end of the line
 def get_command_args(comment):

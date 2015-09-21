@@ -49,5 +49,4 @@ def reply_comment(comment, message):
     except praw.errors.RateLimitExceeded as error:
         print('Rate Limit Exceded')
         print('Sleeping for %d seconds' % error.sleep_time)
-        # time.sleep(error.sleep_time)
         Timer(error.sleep_time, reply_comment, (comment, message)).start()
