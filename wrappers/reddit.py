@@ -1,6 +1,8 @@
 import praw
 import json
+import webbrowser
 from threading import Timer
+from wrappers.toolbox import*
 
 '''
     Reddit wrapper class
@@ -14,8 +16,32 @@ with open("profile.config") as f:
 r = praw.Reddit("Subreddit stock monitor. More info at /r/subredditstockmarket."
                 "Created by u/u1tralord, u/Obzoen, and u/CubeMaster7  v: 0.0")
 
+r.set_oauth_app_info( config["redditOauth"]["client_id"],
+                      config["redditOauth"]["client_secret"],
+                      config["redditOauth"]["redirect_uri"]
+                      )
+           
+webbrowser.open('https://www.reddit.com/login')
+input("Log in and press 'enter' to continue")
+           
+scopes = "creddits edit flair history identity modconfig modcontributors modflair modlog modothers modposts modself modwiki mysubreddits privatemessages read report save submit subscribe vote wikiedit wikiread"
+url = r.get_authorize_url("myStateTrollollol", scopes, True)
+webbrowser.open(url)
+
+print()
+
+print("Press 'accept' and copy the 'code' in the url, paste it here and press 'enter'.")
+code = input("Code: ")
+access_information = r.get_access_information(code)
+r.set_access_credentials(**access_information)
+
+authenticated_user = r.get_me()
+print ( authenticated_user.name, authenticated_user.link_karma )
+
+
+                
 # Log into the Reddit API
-r.login(config["reddit"]["username"], config["reddit"]["password"])
+#r.login(config["reddit"]["username"], config["reddit"]["password"])
 
 # Footer added on to the end of all comments
 FOOTER = "\n\n\n" \
