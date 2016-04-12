@@ -2,6 +2,7 @@
 *.bat
 *.sh
 profile.config
+oauth.ini
 *.db
 .idea
 test.py

@@ -1,6 +1,6 @@
 import praw
 import json
-import webbrowser
+import OAuth2Util
 from threading import Timer
 from wrappers.toolbox import*
 
@@ -15,30 +15,11 @@ with open("profile.config") as f:
 
 r = praw.Reddit("Subreddit stock monitor. More info at /r/subredditstockmarket."
                 "Created by u/u1tralord, u/Obzoen, and u/CubeMaster7  v: 0.0")
+o = OAuth2Util.OAuth2Util(r)
+o.refresh(force=True)
 
-r.set_oauth_app_info( config["redditOauth"]["client_id"],
-                      config["redditOauth"]["client_secret"],
-                      config["redditOauth"]["redirect_uri"]
-                      )
-           
-webbrowser.open('https://www.reddit.com/login')
-input("Log in and press 'enter' to continue")
-           
-scopes = "creddits edit flair history identity modconfig modcontributors modflair modlog modothers modposts modself modwiki mysubreddits privatemessages read report save submit subscribe vote wikiedit wikiread"
-url = r.get_authorize_url("myStateTrollollol", scopes, True)
-webbrowser.open(url)
-
-print()
-
-print("Press 'accept' and copy the 'code' in the url, paste it here and press 'enter'.")
-code = input("Code: ")
-access_information = r.get_access_information(code)
-r.set_access_credentials(**access_information)
-
-authenticated_user = r.get_me()
-print ( authenticated_user.name, authenticated_user.link_karma )
-
-
+#We might need this line IF the OAuth Token doesn't refresh...take out after we test for more than 3600 seconds.
+#repeat_task(3500, o.refresh, ())
                 
 # Log into the Reddit API
 #r.login(config["reddit"]["username"], config["reddit"]["password"])
