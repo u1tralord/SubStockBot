@@ -5,3 +5,4 @@ profile.config
 *.db
 .idea
 test.py
+__pycache__
