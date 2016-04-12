@@ -18,11 +18,9 @@ r = praw.Reddit("Subreddit stock monitor. More info at /r/subredditstockmarket."
 o = OAuth2Util.OAuth2Util(r)
 o.refresh(force=True)
 
-#We might need this line IF the OAuth Token doesn't refresh...take out after we test for more than 3600 seconds.
-#repeat_task(3500, o.refresh, ())
-                
-# Log into the Reddit API
-#r.login(config["reddit"]["username"], config["reddit"]["password"])
+# Start a task to refresh the token before its timeout period
+# Added as a precaution in case OAuth2Util doesn't do it
+repeat_task(3500, o.refresh, ())
 
 # Footer added on to the end of all comments
 FOOTER = "\n\n\n" \
