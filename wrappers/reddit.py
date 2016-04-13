@@ -16,6 +16,7 @@ with open("profile.config") as f:
 
 r = praw.Reddit("Subreddit stock monitor. More info at /r/subredditstockmarket."
                 "Created by u/u1tralord, u/Obzoen, and u/CubeMaster7  v: 0.0")
+                
 #Get OAuth2 Token and login.
 o = OAuth2Util.OAuth2Util(r)
 repeat_task(3500, o.refresh, force=True)
