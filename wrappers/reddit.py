@@ -1,5 +1,6 @@
 import praw
 import json
+#from OAuth2 import OAuth2
 import OAuth2Util
 from threading import Timer
 from wrappers.toolbox import*
@@ -16,10 +17,10 @@ with open("profile.config") as f:
 r = praw.Reddit("Subreddit stock monitor. More info at /r/subredditstockmarket."
                 "Created by u/u1tralord, u/Obzoen, and u/CubeMaster7  v: 0.0")
 o = OAuth2Util.OAuth2Util(r)
-o.refresh(force=True)
+#o.refresh(force=True)
 
 #We might need this line IF the OAuth Token doesn't refresh...take out after we test for more than 3600 seconds.
-#repeat_task(3500, o.refresh, ())
+repeat_task(3500, o.refresh, force=True)
                 
 # Log into the Reddit API
 #r.login(config["reddit"]["username"], config["reddit"]["password"])

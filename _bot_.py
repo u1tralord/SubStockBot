@@ -22,7 +22,7 @@ def respond_to_mentions():
     market.match_offers()
 
 # Reads all comments the bot was mentioned in and parses for a command
-repeat_task(30, respond_to_mentions, ())
+repeat_task(30, respond_to_mentions)
 
 # Matches buy and sell offers to complete transactions
-repeat_task(30, market.match_offers, ())
+repeat_task(30, market.match_offers)
