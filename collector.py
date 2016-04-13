@@ -5,7 +5,7 @@ import json
 from wrappers import db as db_wrapper
 
 db = db_wrapper.get_instance()
-
+'''
 def updateStocks():
 	for subreddit in db.whitelist.find():
 		collectSubStats(sub['subreddit'])
@@ -29,6 +29,29 @@ def updateStockProperties(subname):
 	db.stocks.update_one({'stock_name': subname}, {
         '$set': db_stock
     }, upsert=True)
+'''  
+
+#Returns an integer from the average time between comments.
+#Calculating the average difference between the UTC variable on comment json object
+#reddit.com/r/funny/comments.json
+def get_comment_freq(subname):
+    # reddit.com/r/funny/comments.json 
+    jsonData = get_json('r/' + subname + '/comments')
+    #json.encode(data)
+    json_to_file('jsontest', jsonData)
+    
+    #return comment_freq
+    
+'''
+set a difference variable to the difference between the utc of the current comment and the utc of the last comment 
+then average all of the differences
+'''
+    
+def json_to_file(filename, jsonData):
+    outfile = open(filename + '.json', 'w')
+    json.dump(jsonData, outfile, sort_keys = True, indent = 4,
+        ensure_ascii=False)
+    outfile.close()
 
 def get_json(path, after=None):
     url = 'http://www.reddit.com/{}.json?limit=1000'.format(path)
@@ -37,5 +60,7 @@ def get_json(path, after=None):
     r = requests.get(url, headers={'user-agent': 'sub_stock_bot/0.0.1'})
     data = r.json()
     return data
+    
+get_comment_freq('funny')
 
 

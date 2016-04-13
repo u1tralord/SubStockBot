@@ -26,7 +26,7 @@ FOOTER = "\n\n\n" \
          "^(I am just a bot)  \n" \
          "^(Please visit /r/subredditstockmarket for more info!)  \n" \
          "^(If I messed up your request, please reply to this comment)  \n" \
-         "^(with /undo withing the next hour)  \n"
+         "^(with /undo within the next hour)  \n"
 
 logged_in_user = lambda: str(r.user)
 
