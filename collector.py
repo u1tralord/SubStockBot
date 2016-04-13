@@ -33,59 +33,13 @@ def update_stock_properties(subname):
 
 #Returns an integer from the average time between comments.
 #Calculating the average difference between the UTC variable on comment json object
-#reddit.com/r/funny/comments.json
-def get_comment_freq2(subname):
+def get_comment_freq(subname):
 	rawComments = get_json("/r/{}/comments".format(subname))['data']['children']
 	differenceTotal = 0
 	for x in range(1, len(rawComments)):
 		diff = abs(rawComments[x]['data']['created_utc'] - rawComments[x-1]['data']['created_utc'])
 		differenceTotal += diff
 	return differenceTotal / (len(rawComments)-1)
-
-#Returns an integer from the average time between comments.
-#Calculating the average difference between the UTC variable on comment json object
-#reddit.com/r/funny/comments.json
-def get_comment_freq(subname):
-    # reddit.com/r/funny/comments.json
-    rawData = get_json("/r/{}/comments".format(subname))
-    
-    comments = rawData['data']['children']
-    commentTimes = []
-    for comment in comments:
-        commentTimes.append(comment['data']['created_utc'])
-        
-    toolbox.mergeSort(commentTimes)
-    
-    diffs = [commentTimes[n]-commentTimes[n-1] for n in range(1,len(commentTimes))]
-    
-    print (diffs)
-    toolbox.mergeSort(diffs)
-    
-    commentFreq = 0
-    for diff in diffs:
-        commentFreq += diff
-        
-    commentFreq = commentFreq/len(diffs)
-    
-    return commentFreq
-    '''
-    eval = commentTimes[0]
-    diffs = []
-    for time in commentTimes:
-        print( str(time) + ' - ' + str(eval) + ' = ' + str(time-eval) )
-        diffs.append(time - eval)
-        eval = time
-    
-    diffs.pop(0)
-           
-    commentFreq = 0
-    for diff in diffs:
-        commentFreq += diff
-        
-    commentFreq = commentFreq/len(diffs)
-    
-    print (commentFreq)
-    '''
 
 def get_json(path, after=None):
     url = 'http://www.reddit.com/{}.json?limit=1000'.format(path)
