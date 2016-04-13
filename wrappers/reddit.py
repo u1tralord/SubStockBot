@@ -1,6 +1,5 @@
 import praw
 import json
-#from OAuth2 import OAuth2
 import OAuth2Util
 from threading import Timer
 from wrappers.toolbox import*

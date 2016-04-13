@@ -1,5 +1,6 @@
 import market
 import command_processor
+import threading
 from wrappers import db as db_wrapper
 from wrappers import reddit
 from wrappers.toolbox import*
@@ -18,11 +19,8 @@ def respond_to_mentions():
                 'post_id': post.id,
                 'utc': current_utc_time()
             })
-            command_processor.process_post(post)
+            threading.Thread(target = command_processor.process_post, args=post).start()
     market.match_offers()
 
 # Reads all comments the bot was mentioned in and parses for a command
 repeat_task(30, respond_to_mentions)
-
-# Matches buy and sell offers to complete transactions
-repeat_task(30, market.match_offers)
