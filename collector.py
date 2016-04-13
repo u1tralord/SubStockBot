@@ -39,11 +39,77 @@ def update_stock_properties(subname):
 def get_comment_freq(subname):
     # reddit.com/r/funny/comments.json 
     rawData = get_json("/r/{}/comments".format(subname))
-    #json.encode(data)
-    json_to_file('jsontest', rawData)
     
+    comments = rawData['data']['children']
+    commentTimes = []
+    for comment in comments:
+        commentTimes.append(comment['data']['created_utc'])
+        
+    mergeSort(commentTimes)
+    
+    diffs = [commentTimes[n]-commentTimes[n-1] for n in range(1,len(commentTimes))]
+    
+    print (diffs)
+    mergeSort(diffs)
+    
+    commentFreq = 0
+    for diff in diffs:
+        commentFreq += diff
+        
+    commentFreq = commentFreq/len(diffs)
+    
+    print(commentFreq)
+    '''
+    eval = commentTimes[0]
+    diffs = []
+    for time in commentTimes:
+        print( str(time) + ' - ' + str(eval) + ' = ' + str(time-eval) )
+        diffs.append(time - eval)
+        eval = time
+    
+    diffs.pop(0)
+           
+    commentFreq = 0
+    for diff in diffs:
+        commentFreq += diff
+        
+    commentFreq = commentFreq/len(diffs)
+    
+    print (commentFreq)
+    '''
     ## calculate and return comment frequency
     return -1 # Temporary return value
+    
+def mergeSort(alist):
+    if len(alist)>1:
+        mid = len(alist)//2
+        lefthalf = alist[:mid]
+        righthalf = alist[mid:]
+
+        mergeSort(lefthalf)
+        mergeSort(righthalf)
+
+        i=0
+        j=0
+        k=0
+        while i < len(lefthalf) and j < len(righthalf):
+            if lefthalf[i] < righthalf[j]:
+                alist[k]=lefthalf[i]
+                i=i+1
+            else:
+                alist[k]=righthalf[j]
+                j=j+1
+            k=k+1
+
+        while i < len(lefthalf):
+            alist[k]=lefthalf[i]
+            i=i+1
+            k=k+1
+
+        while j < len(righthalf):
+            alist[k]=righthalf[j]
+            j=j+1
+            k=k+1
     
 '''
 set a difference variable to the difference between the utc of the current comment and the utc of the last comment 
@@ -87,4 +153,4 @@ def get_upvote_total(subname):
 		upvoteTotal += jsonPostData["score"]
 	return upvoteTotal
 
-get_comment_freq('funny')
+get_comment_freq('subredditstockmarket')
