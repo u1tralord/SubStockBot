@@ -21,3 +21,40 @@ current_utc_time_millis = lambda: int(round(time.time()) * 1000)
 def repeat_task(delay, action, *args, **kwargs):
     Timer(delay, repeat_task, [delay, action] + list(args), kwargs).start()
     action(*args, **kwargs)
+
+def json_to_file(filename, jsonData):
+    outfile = open(filename + '.json', 'w')
+    json.dump(jsonData, outfile, sort_keys = True, indent = 4,
+        ensure_ascii=False)
+    outfile.close()
+
+def mergeSort(alist):
+    if len(alist)>1:
+        mid = len(alist)//2
+        lefthalf = alist[:mid]
+        righthalf = alist[mid:]
+
+        mergeSort(lefthalf)
+        mergeSort(righthalf)
+
+        i=0
+        j=0
+        k=0
+        while i < len(lefthalf) and j < len(righthalf):
+            if lefthalf[i] < righthalf[j]:
+                alist[k]=lefthalf[i]
+                i=i+1
+            else:
+                alist[k]=righthalf[j]
+                j=j+1
+            k=k+1
+
+        while i < len(lefthalf):
+            alist[k]=lefthalf[i]
+            i=i+1
+            k=k+1
+
+        while j < len(righthalf):
+            alist[k]=righthalf[j]
+            j=j+1
+            k=k+1

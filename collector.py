@@ -2,12 +2,11 @@ import time
 import requests
 import json
 import pprint
-
 from wrappers import db as db_wrapper
+from wrappers import toolbox
 
 db = db_wrapper.get_instance()
 
-'''
 def update_stocks():
 	for subreddit in db.whitelist.find():
 		collectSubStats(sub['subreddit'])
@@ -31,13 +30,23 @@ def update_stock_properties(subname):
 	db.stocks.update_one({'stock_name': subname}, {
         '$set': db_stock
     }, upsert=True)
-'''
+
+#Returns an integer from the average time between comments.
+#Calculating the average difference between the UTC variable on comment json object
+#reddit.com/r/funny/comments.json
+def get_comment_freq2(subname):
+	rawComments = get_json("/r/{}/comments".format(subname))['data']['children']
+	differenceTotal = 0
+	for x in range(1, len(rawComments)):
+		diff = abs(rawComments[x]['data']['created_utc'] - rawComments[x-1]['data']['created_utc'])
+		differenceTotal += diff
+	return differenceTotal / (len(rawComments)-1)
 
 #Returns an integer from the average time between comments.
 #Calculating the average difference between the UTC variable on comment json object
 #reddit.com/r/funny/comments.json
 def get_comment_freq(subname):
-    # reddit.com/r/funny/comments.json 
+    # reddit.com/r/funny/comments.json
     rawData = get_json("/r/{}/comments".format(subname))
     
     comments = rawData['data']['children']
@@ -45,12 +54,12 @@ def get_comment_freq(subname):
     for comment in comments:
         commentTimes.append(comment['data']['created_utc'])
         
-    mergeSort(commentTimes)
+    toolbox.mergeSort(commentTimes)
     
     diffs = [commentTimes[n]-commentTimes[n-1] for n in range(1,len(commentTimes))]
     
     print (diffs)
-    mergeSort(diffs)
+    toolbox.mergeSort(diffs)
     
     commentFreq = 0
     for diff in diffs:
@@ -58,7 +67,7 @@ def get_comment_freq(subname):
         
     commentFreq = commentFreq/len(diffs)
     
-    print(commentFreq)
+    return commentFreq
     '''
     eval = commentTimes[0]
     diffs = []
@@ -77,50 +86,6 @@ def get_comment_freq(subname):
     
     print (commentFreq)
     '''
-    ## calculate and return comment frequency
-    return -1 # Temporary return value
-    
-def mergeSort(alist):
-    if len(alist)>1:
-        mid = len(alist)//2
-        lefthalf = alist[:mid]
-        righthalf = alist[mid:]
-
-        mergeSort(lefthalf)
-        mergeSort(righthalf)
-
-        i=0
-        j=0
-        k=0
-        while i < len(lefthalf) and j < len(righthalf):
-            if lefthalf[i] < righthalf[j]:
-                alist[k]=lefthalf[i]
-                i=i+1
-            else:
-                alist[k]=righthalf[j]
-                j=j+1
-            k=k+1
-
-        while i < len(lefthalf):
-            alist[k]=lefthalf[i]
-            i=i+1
-            k=k+1
-
-        while j < len(righthalf):
-            alist[k]=righthalf[j]
-            j=j+1
-            k=k+1
-    
-'''
-set a difference variable to the difference between the utc of the current comment and the utc of the last comment 
-then average all of the differences
-'''
-    
-def json_to_file(filename, jsonData):
-    outfile = open(filename + '.json', 'w')
-    json.dump(jsonData, outfile, sort_keys = True, indent = 4,
-        ensure_ascii=False)
-    outfile.close()
 
 def get_json(path, after=None):
     url = 'http://www.reddit.com/{}.json?limit=1000'.format(path)
@@ -152,5 +117,3 @@ def get_upvote_total(subname):
 		jsonPostData = rawPost["data"]
 		upvoteTotal += jsonPostData["score"]
 	return upvoteTotal
-
-get_comment_freq('subredditstockmarket')
