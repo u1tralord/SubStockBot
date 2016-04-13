@@ -15,7 +15,9 @@ current_utc_time_millis = lambda: int(round(time.time()) * 1000)
 # Runs a task at a specified interval.
 #     delay = time in seconds between runs
 #     action = function name to be repeated
-#     actionargs = args to be passed to action function
+#     *args, **kwargs = arguments and keyword arguments to be passed to the function
+#     this is an overloaded function and can take an infinite number of arguments
+#     syntax = repeat_task(5, myFunc, 3, 4, myKwarg1=True, myKwarg2=10)
 def repeat_task(delay, action, *args, **kwargs):
     Timer(delay, repeat_task, [delay, action] + list(args), kwargs).start()
     action(*args, **kwargs)
