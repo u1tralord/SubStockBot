@@ -16,7 +16,7 @@ def process_post(post):
 	else:
 		print('Command not recognized ' + command_args[0].lower())
 		print(str(commands))
-		reddit.reply_comment(post, "Command not recognized")
+		reddit.reply(post, "Command not recognized")
 
 # Extracts a list of words separated by spaces following the username mention to the end of the line
 def get_command_args(comment):
@@ -42,18 +42,18 @@ def buy(args, comment):
 			unit_bid = float(args[3])
 			quantity = float(args[1])
 		except ValueError:
-			reddit.reply_comment(comment, "Invalid command. Values should not have any symbols or letters")
+			reddit.reply(comment, "Invalid command. Values should not have any symbols or letters")
 
 		if unit_bid is not None and quantity is not None:
 			try:
 				market.place_buy(username, args[2], quantity, unit_bid)
-				reddit.reply_comment(comment, "You just placed an offer to buy for {} of {} stock for {} kreddit each".format(
+				reddit.reply(comment, "You just placed an offer to buy for {} of {} stock for {} kreddit each".format(
 					args[1],
 					args[2],
 					args[3]
 				))
 			except ValueError as ve:
-				reddit.reply_comment(comment, str(ve))
+				reddit.reply(comment, str(ve))
 
 # Comment format: /u/substockbot sell 5 askreddit 50 kreddit
 def sell(args, comment):
@@ -67,23 +67,23 @@ def sell(args, comment):
 			unit_bid = float(args[3])
 			quantity = float(args[1])
 		except ValueError:
-			reddit.reply_comment(comment, "Invalid command. Values should not have any symbols or letters")
+			reddit.reply(comment, "Invalid command. Values should not have any symbols or letters")
 
 		if unit_bid is not None and quantity is not None:
 			try:
 				market.place_sell(username, args[2], quantity, unit_bid)
-				reddit.reply_comment(comment, "You just placed an offer to sell for {} of {} stock for {} kreddit each".format(
+				reddit.reply(comment, "You just placed an offer to sell for {} of {} stock for {} kreddit each".format(
 					args[1],
 					args[2],
 					args[3]
 				))
 			except ValueError as ve:
-				reddit.reply_comment(comment, str(ve))
+				reddit.reply(comment, str(ve))
 
 def get_stats(args, comment):
 	print("STATs: " + str(args))
 	if len(args) >= 2:
-		reddit.reply_comment(comment, "You just tried to get the latest statistics for  {} stocks".format(args[1]))
+		reddit.reply(comment, "You just tried to get the latest statistics for  {} stocks".format(args[1]))
 
 def get_profile(args, comment):
 	print("Commenting Profile")
@@ -97,7 +97,7 @@ def get_profile(args, comment):
 		table += "{}|{}|{}\n".format(stock['stock_name'], stock['quantity_owned'], 0)
 
 	profile_comment = username + "\'s Profile\n\n\n" + table
-	reddit.reply_comment(comment, profile_comment)
+	reddit.reply(comment, profile_comment)
 
 commands = {
 	"buy": buy,

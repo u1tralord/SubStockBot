@@ -43,13 +43,12 @@ def is_mod(username, subreddit):
 def get_mentions():
 	return r.get_mentions(limit=None)
 
-# Method for standard commenting by the bot. We should add a footer to the bot with a link to the
-# subreddit, and the standard "I AM A BOT" message
-def reply_comment(comment, message):
-	try:
-		comment.reply(message + FOOTER)
-		print(message)
-	except praw.errors.RateLimitExceeded as error:
-		print('Rate Limit Exceded')
-		print('Sleeping for %d seconds' % error.sleep_time)
-		Timer(error.sleep_time, reply_comment, (comment, message)).start()
+# Method for standard commenting by the bot.
+def reply(redditThing, message):
+    try:
+        redditThing.reply(message + FOOTER)
+        print(message)
+    except praw.errors.RateLimitExceeded as error:
+        print('Rate Limit Exceded')
+        print('Sleeping for %d seconds' % error.sleep_time)
+        Timer(error.sleep_time, reply, (redditThing, message)).start()
