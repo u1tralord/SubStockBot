@@ -7,7 +7,7 @@ from user import *
 	All commands will be added here, and this module will determine which command to run
 '''
 # Processes the comment and figures out what command to run
-def process_post(post, private=True):
+def process_post(post):
 	command_args = str(post.body).split(" ")
 	if '/u/' in command_args[0]:
 		command_args.pop(0)
@@ -18,14 +18,14 @@ def process_post(post, private=True):
 	if is_command(command_args):
 		print(post)
 		# Run the command that matches the first argument in the comment. Ex: Buy, sell, etc
-		commands[command_args[0].lower()](command_args, post, private)
+		commands[command_args[0].lower()](command_args, post)
 	else:
 		print('Command not recognized ' + command_args[0].lower())
 		print(str(commands))
 		reddit.reply(post, "Command not recognized")
 
 # Comment format: /u/substockbot sell 5 askreddit 50 kreddit
-def buy(args, comment, private):
+def buy(args, comment):
 	if len(args) >= 4:
 		print("BUYING : " + str(args))
 		username = comment.author.name
@@ -50,7 +50,7 @@ def buy(args, comment, private):
 				reddit.reply(comment, str(ve))
 
 # Comment format: /u/substockbot sell 5 askreddit 50 kreddit
-def sell(args, comment, private):
+def sell(args, comment):
 	if len(args) >= 4:
 		print("SELLING : " + str(args))
 		username = comment.author.name
@@ -66,18 +66,11 @@ def sell(args, comment, private):
 		if unit_bid is not None and quantity is not None:
 			try:
 				market.place_sell(username, args[2], quantity, unit_bid)
-				if private:
-					reddit.send_message(comment.author, 'Re: ' + str(comment.subject), "You just placed an offer to sell for {} of {} stock for {} kreddit each".format(
-						args[1],
-						args[2],
-						args[3]
-					))
-				else:
-					reddit.reply_comment(comment, "You just placed an offer to sell for {} of {} stock for {} kreddit each".format(
-						args[1],
-						args[2],
-						args[3]
-					))
+				reddit.reply(comment, "You just placed an offer to sell for {} of {} stock for {} kreddit each".format(
+					args[1],
+					args[2],
+					args[3]
+				))
 			except ValueError as ve:
 				reddit.reply(comment, "You just placed an offer to sell for {} of {} stock for {} kreddit each".format(
 					args[1],
@@ -87,12 +80,12 @@ def sell(args, comment, private):
 			except ValueError as ve:
 				reddit.reply(comment, str(ve))
 
-def get_stats(args, comment, private):
+def get_stats(args, comment):
 	print("STATs: " + str(args))
 	if len(args) >= 2:
 		reddit.reply(comment, "You just tried to get the latest statistics for  {} stocks".format(args[1]))
 
-def get_profile(args, comment, private):
+def get_profile(args, comment):
 	print("Commenting Profile")
 	username = comment.author.name
 	user = User(username)
