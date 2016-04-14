@@ -103,7 +103,7 @@ def get_profile(args, comment, private):
 	for stock in stocks:
 		table += "{}|{}|{}\n".format(stock['stock_name'], stock['quantity_owned'], 0)
 
-	profile_comment = username + "\'s Profile\n\n\n" + table
+	profile_comment = "{}\'s Profile:  \nBalance: {}  \n\n\n".format(username, balance) + table
 	reddit.reply(comment, profile_comment)
 
 commands = {
