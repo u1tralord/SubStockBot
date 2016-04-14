@@ -7,16 +7,23 @@ from user import *
 	All commands will be added here, and this module will determine which command to run
 '''
 # Processes the comment and figures out what command to run
-def process_post(post):
-	command_args = get_command_args(post)
+def process_post(post, private=True):
+	if private:
+		command_args = [str(post.body)]
+	else:
+		command_args = get_command_args(post)
+		
 	if is_command(command_args):
 		print(post)
 		# Run the command that matches the first argument in the comment. Ex: Buy, sell, etc
-		commands[command_args[0].lower()](command_args, post)
+		commands[command_args[0].lower()](command_args, post, private)
 	else:
 		print('Command not recognized ' + command_args[0].lower())
 		print(str(commands))
-		reddit.reply_comment(post, "Command not recognized")
+		if private:
+			reddit.send_message(post.author, 'Re: ' + str(post.subject), "Command not recognized")
+		else:
+			reddit.reply_comment(post, "Command not recognized")
 
 # Extracts a list of words separated by spaces following the username mention to the end of the line
 def get_command_args(comment):
@@ -31,7 +38,7 @@ def get_command_args(comment):
 	return user_commands
 
 # Comment format: /u/substockbot sell 5 askreddit 50 kreddit
-def buy(args, comment):
+def buy(args, comment, private):
 	if len(args) >= 4:
 		print("BUYING : " + str(args))
 		username = comment.author.name
@@ -42,7 +49,10 @@ def buy(args, comment):
 			unit_bid = float(args[3])
 			quantity = float(args[1])
 		except ValueError:
-			reddit.reply_comment(comment, "Invalid command. Values should not have any symbols or letters")
+			if private:
+				reddit.send_message(comment.author, 'Re: ' + str(comment.subject), "Invalid command. Values should not have any symbols or letters")
+			else:
+				reddit.reply_comment(comment, "Invalid command. Values should not have any symbols or letters")
 
 		if unit_bid is not None and quantity is not None:
 			try:
@@ -54,9 +64,13 @@ def buy(args, comment):
 				))
 			except ValueError as ve:
 				reddit.reply_comment(comment, str(ve))
+				if private:
+					reddit.send_message(comment.author, 'Re: ' + str(comment.subject), str(ve))
+				else:
+					reddit.reply_comment(comment, str(ve))
 
 # Comment format: /u/substockbot sell 5 askreddit 50 kreddit
-def sell(args, comment):
+def sell(args, comment, private):
 	if len(args) >= 4:
 		print("SELLING : " + str(args))
 		username = comment.author.name
@@ -67,25 +81,42 @@ def sell(args, comment):
 			unit_bid = float(args[3])
 			quantity = float(args[1])
 		except ValueError:
-			reddit.reply_comment(comment, "Invalid command. Values should not have any symbols or letters")
+			if private:
+				reddit.send_message(comment.author, 'Re: ' + str(comment.subject), "Invalid command. Values should not have any symbols or letters")
+			else:
+				reddit.reply_comment(comment, "Invalid command. Values should not have any symbols or letters")
 
 		if unit_bid is not None and quantity is not None:
 			try:
 				market.place_sell(username, args[2], quantity, unit_bid)
-				reddit.reply_comment(comment, "You just placed an offer to sell for {} of {} stock for {} kreddit each".format(
-					args[1],
-					args[2],
-					args[3]
-				))
+				if private:
+					reddit.send_message(comment.author, 'Re: ' + str(comment.subject), "You just placed an offer to sell for {} of {} stock for {} kreddit each".format(
+						args[1],
+						args[2],
+						args[3]
+					))
+				else:
+					reddit.reply_comment(comment, "You just placed an offer to sell for {} of {} stock for {} kreddit each".format(
+						args[1],
+						args[2],
+						args[3]
+					))
 			except ValueError as ve:
-				reddit.reply_comment(comment, str(ve))
+				if private:
+					reddit.send_message(comment.author, 'Re: ' + str(comment.subject), str(ve))
+				else:
+					reddit.reply_comment(comment, str(ve))
+				
 
-def get_stats(args, comment):
+def get_stats(args, comment, private):
 	print("STATs: " + str(args))
 	if len(args) >= 2:
-		reddit.reply_comment(comment, "You just tried to get the latest statistics for  {} stocks".format(args[1]))
+		if private:
+			reddit.send_message(comment.author, 'Re: ' + str(comment.subject), "You just tried to get the latest statistics for  {} stocks".format(args[1]))
+		else:
+			reddit.reply_comment(comment, "You just tried to get the latest statistics for  {} stocks".format(args[1]))
 
-def get_profile(args, comment):
+def get_profile(args, comment, private):
 	print("Commenting Profile")
 	username = comment.author.name
 	user = User(username)
@@ -97,7 +128,11 @@ def get_profile(args, comment):
 		table += "{}|{}|{}\n".format(stock['stock_name'], stock['quantity_owned'], 0)
 
 	profile_comment = username + "\'s Profile\n\n\n" + table
-	reddit.reply_comment(comment, profile_comment)
+	if private:
+			reddit.send_message(comment.author, 'Re: ' + str(comment.subject), profile_comment)
+	else:
+		reddit.reply_comment(comment, profile_comment)
+	#reddit.reply_comment(comment, profile_comment)
 
 commands = {
 	"buy": buy,
