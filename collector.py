@@ -46,19 +46,21 @@ def update_stock_properties(subname):
     
 #Returns an integer value representing the number of subscribers to a sub.
 #	 subname = string value of subreddit to be evaluated
-def get_subscribers(subname):
-	return get_json("/r/{}/about".format(subname))['data']['subscribers']
+def get_subscribers(rawAboutJson):
+	return rawAboutJson['data']['subscribers']
 
 # Returns an integer value representing the calculated stock value
 #     subname = string value of subreddit to be evaluated
 def get_stock_value(subname):
+	rawAboutJson = get_json("/r/{}/about".format(subname))
 	rawCommentsJson = get_json("/r/{}/comments".format(subname))
 	rawPostsJson = get_json("/r/{}".format(subname))
 
 	comment_freq = get_comment_freq(rawCommentsJson)
 	upvote_sum = get_upvote_total(rawPostsJson)
 	upvote_avg = get_avg_post_score(rawPostsJson)
-
+	subscribers = get_subscribers(rawAboutJson)
+	
 	# print("{} {} {}".format(comment_freq, upvote_sum, upvote_avg))
 	return -1 # Temporary return value
 
@@ -92,4 +94,3 @@ def get_upvote_total(rawPostsJson):
 		jsonPostData = rawPost["data"]
 		upvoteTotal += jsonPostData["score"]
 	return upvoteTotal
-	
