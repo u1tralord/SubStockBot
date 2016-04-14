@@ -22,12 +22,17 @@ def repeat_task(delay, action, *args, **kwargs):
     Timer(delay, repeat_task, [delay, action] + list(args), kwargs).start()
     action(*args, **kwargs)
 
+# Saves JSON object to provided file path
+#     filename = String for filename to be saved to
+#     jsonData = JSON data to be written to file
 def json_to_file(filename, jsonData):
     outfile = open(filename + '.json', 'w')
     json.dump(jsonData, outfile, sort_keys = True, indent = 4,
         ensure_ascii=False)
     outfile.close()
 
+# Mergesort function
+#     alist = generic list to sorted
 def mergeSort(alist):
     if len(alist)>1:
         mid = len(alist)//2

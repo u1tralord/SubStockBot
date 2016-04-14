@@ -7,6 +7,19 @@ from wrappers import toolbox
 
 db = db_wrapper.get_instance()
 
+# Basic Reddit JSON API interface
+# Retrieves JSON data from path provided and returns a parsed JSON object
+#     path = Reddit path to follow to be prefixed by "http://www.reddit.com/"
+#     after (optional) = Integer value for earliest UTC in seconds to retrieve. 
+#                        No posts before this limit will be retieved
+def get_json(path, after=None):
+    url = 'http://www.reddit.com/{}.json?limit=1000'.format(path)
+    if (after):
+        url += '&after=' + after
+    r = requests.get(url, headers={'user-agent': 'sub_stock_bot/0.0.1'})
+    data = r.json()
+    return data
+
 def update_stocks():
 	for subreddit in db.whitelist.find():
 		collectSubStats(sub['subreddit'])
@@ -31,43 +44,46 @@ def update_stock_properties(subname):
         '$set': db_stock
     }, upsert=True)
 
-#Returns an integer from the average time between comments.
-#Calculating the average difference between the UTC variable on comment json object
-def get_comment_freq(subname):
-	rawComments = get_json("/r/{}/comments".format(subname))['data']['children']
+# Returns an integer value representing the calculated stock value
+#     subname = string value of subreddit to be evaluated
+def get_stock_value(subname):
+	rawCommentsJson = get_json("/r/{}/comments".format(subname))
+	rawPostsJson = get_json("/r/{}".format(subname))
+
+	comment_freq = get_comment_freq(rawCommentsJson)
+	upvote_sum = get_upvote_total(rawPostsJson)
+	upvote_avg = get_avg_post_score(rawPostsJson)
+
+	# print("{} {} {}".format(comment_freq, upvote_sum, upvote_avg))
+	return -1 # Temporary return value
+
+# Returns an integer for the average time between comments.
+# Calculating the average difference between the UTC variable on comment json object
+#     rawCommentsJson = raw json output of get_json() for comments path of desired subreddit
+def get_comment_freq(rawCommentsJson):
+	rawComments = rawCommentsJson['data']['children']
 	differenceTotal = 0
 	for x in range(1, len(rawComments)):
 		diff = abs(rawComments[x]['data']['created_utc'] - rawComments[x-1]['data']['created_utc'])
 		differenceTotal += diff
 	return differenceTotal / (len(rawComments)-1)
 
-def get_json(path, after=None):
-    url = 'http://www.reddit.com/{}.json?limit=1000'.format(path)
-    if (after):
-        url += '&after=' + after
-    r = requests.get(url, headers={'user-agent': 'sub_stock_bot/0.0.1'})
-    data = r.json()
-    return data
-    
-def get_stock_value(subname):
-	comment_freq = get_comment_freq(subname)
-	upvote_sum = get_upvote_total(subname)
-	return -1 # Temporary return val 
-
-def get_avg_post_score(subname):
-	rawPosts = get_json("/r/{}".format(subname))["data"]["children"]
+# Returns an integer for average post score of all posts provided by the raw json response
+#     rawPostsJson = raw json output of get_json() for posts path of desired subreddit
+def get_avg_post_score(rawPostsJson):
 	upvoteTotal = 0
 	totalPosts = 0
-	for rawPost in rawPosts:
+	for rawPost in rawPostsJson["data"]["children"]:
 		jsonPostData = rawPost["data"]
 		upvoteTotal += jsonPostData["score"]
 		totalPosts += 1
 	return upvoteTotal/totalPosts
 
-def get_upvote_total(subname):
-	rawPosts = get_json("/r/{}".format(subname))["data"]["children"]
+# Returns an integer for total post score of all posts provided by the raw json response
+#     rawPostsJson = raw json output of get_json() for posts path of desired subreddit
+def get_upvote_total(rawPostsJson):
 	upvoteTotal = 0
-	for rawPost in rawPosts:
+	for rawPost in rawPostsJson["data"]["children"]:
 		jsonPostData = rawPost["data"]
 		upvoteTotal += jsonPostData["score"]
 	return upvoteTotal
