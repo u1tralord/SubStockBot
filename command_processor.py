@@ -24,19 +24,6 @@ def process_post(post, private=True):
 		print(str(commands))
 		reddit.reply(post, "Command not recognized")
 
-
-# Extracts a list of words separated by spaces following the username mention to the end of the line
-def get_command_args(comment):
-	# Gets the position of the username mention from the comment
-	command_position = comment.body.find("/u/" + reddit.logged_in_user().lower())
-	# Removes a section from the string up to the end of the username mention
-	string_after_username_call = comment.body[command_position+len("/u/"+reddit.logged_in_user()):]
-	# Removed any text after the end of the current line and splits the remaining text by spacing
-	# Ehh, it works. Ugly, but it works
-	# \r is necessary for unix (which the bot is running on) and \n for windows
-	user_commands = string_after_username_call.strip().strip("\r").strip("\n").split(" ")
-	return user_commands
-
 # Comment format: /u/substockbot sell 5 askreddit 50 kreddit
 def buy(args, comment, private):
 	if len(args) >= 4:
@@ -60,7 +47,6 @@ def buy(args, comment, private):
 					args[3]
 				))
 			except ValueError as ve:
-				reddit.reply_comment(comment, str(ve))
 				reddit.reply(comment, str(ve))
 
 # Comment format: /u/substockbot sell 5 askreddit 50 kreddit
