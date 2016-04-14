@@ -8,10 +8,12 @@ from user import *
 '''
 # Processes the comment and figures out what command to run
 def process_post(post, private=True):
-	if private:
-		command_args = [str(post.body)]
-	else:
-		command_args = get_command_args(post)
+	command_args = str(post.body).split(" ")
+	if '/u/' in command_args[0]:
+		command_args.pop(0)
+		
+	print ("Body - " +str(post.body))
+	print ("Args - " +str(command_args))
 		
 	if is_command(command_args):
 		print(post)
