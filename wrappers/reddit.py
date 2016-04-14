@@ -69,7 +69,7 @@ def send_message(recipient, subject, message):
 		print('Sleeping for %d secconds' % error.sleep_time)
 		Timer(error.sleep_time+1, send_message, (recipient, subject, message)).start()
 	
-'''
+
 # Method for standard commenting by the bot.
 def reply(redditThing, message):
     try:
@@ -79,4 +79,4 @@ def reply(redditThing, message):
         print('Rate Limit Exceded')
         print('Sleeping for %d seconds' % error.sleep_time)
         Timer(error.sleep_time, reply, (redditThing, message)).start()
-'''
+
