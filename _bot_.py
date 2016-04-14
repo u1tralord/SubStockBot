@@ -9,21 +9,21 @@ from wrappers.toolbox import*
 db = db_wrapper.get_instance()
 
 def handle_posts_thread(post):
-    database_entry = db.processed_posts.find_one({"post_id": post.id})
-    if database_entry is None:
-        print("New Comment!")
-        db.processed_posts.insert_one({
-            'post_id': post.id,
-            'utc': current_utc_time()
-        })
-        command_processor.process_post(post)
+	database_entry = db.processed_posts.find_one({"post_id": post.id})
+	if database_entry is None:
+		print("New Comment!")
+		db.processed_posts.insert_one({
+			'post_id': post.id,
+			'utc': current_utc_time()
+		})
+		command_processor.process_post(post)
 
 # Gets all comments the user was mentioned in, and processes the comment
 def respond_to_mentions():
-    print("Retrieving Mentions...")
-    for post in reddit.get_mentions():
-        threading.Thread(target=handle_posts_thread, args=(post,)).start()
-    market.match_offers()
+	print("Retrieving Mentions...")
+	for post in reddit.get_mentions():
+		threading.Thread(target=handle_posts_thread, args=(post,)).start()
+	market.match_offers()
 
 # Reads all comments the bot was mentioned in and parses for a command
 repeat_task(30, respond_to_mentions)

@@ -6,120 +6,120 @@ from wrappers.toolbox import *
 db = db_wrapper.get_instance()
 
 '''
-    User database module
-    Wrapper class for interfacing user accounts with the mongo database
+	User database module
+	Wrapper class for interfacing user accounts with the mongo database
 
-    Todo:
-        * Add/Remove Stock functions
+	Todo:
+		* Add/Remove Stock functions
 '''
 
 whitelist_cache = {
-    'last_updated': current_utc_time(),
-    'subreddits': db.whitelist.find()
+	'last_updated': current_utc_time(),
+	'subreddits': db.whitelist.find()
 }
 
 # Load the general settings from file
 settings = None
 with open("settings.config") as f:
-    settings = json.load(f)
+	settings = json.load(f)
 
 class User:
-    def __init__(self, username):
-        self.username = username
-        self.update()
+	def __init__(self, username):
+		self.username = username
+		self.update()
 
-    def get_username(self):
-        return self.username
+	def get_username(self):
+		return self.username
 
-    def get_balance(self):
-        return self.db_user['balance']
+	def get_balance(self):
+		return self.db_user['balance']
 
-    def get_stocks(self):
-        return self.db_user['stocks']
+	def get_stocks(self):
+		return self.db_user['stocks']
 
-    def update(self):
-        db_user = db.users.find_one({'username': self.username})
-        if db_user is None:
-            db_user = create_user(self.username)
-        db_user['permission_level'] = get_permission_level(self.username)
-        self.db_user = db_user
+	def update(self):
+		db_user = db.users.find_one({'username': self.username})
+		if db_user is None:
+			db_user = create_user(self.username)
+		db_user['permission_level'] = get_permission_level(self.username)
+		self.db_user = db_user
 
-    def write_db(self):
-        db.users.update_one({'username': self.username}, {
-            '$set': self.db_user
-        }, upsert=True)
+	def write_db(self):
+		db.users.update_one({'username': self.username}, {
+			'$set': self.db_user
+		}, upsert=True)
 
-    def add_stock(self, stock_name, quantity):
-        self.update()
-        print("Adding '{}' stock to user: {} ".format(stock_name, self.username))
-        if is_whitelisted(stock_name):
-            stock_found = False
-            for stock_entry in self.db_user['stocks']:
-                if stock_entry['stock_name'] == stock_name:
-                    stock_entry['quantity_owned'] = int(stock_entry['quantity_owned']) + quantity
-                    stock_found = True
-            if not stock_found:
-                self.db_user['stocks'].append({
-                    'stock_name': stock_name,
-                    'quantity_owned': quantity
-                })
-        else:
-            raise ValueError('Stock entered is not available for trading')
-        print("Finished adding stocks")
-        self.write_db()
+	def add_stock(self, stock_name, quantity):
+		self.update()
+		print("Adding '{}' stock to user: {} ".format(stock_name, self.username))
+		if is_whitelisted(stock_name):
+			stock_found = False
+			for stock_entry in self.db_user['stocks']:
+				if stock_entry['stock_name'] == stock_name:
+					stock_entry['quantity_owned'] = int(stock_entry['quantity_owned']) + quantity
+					stock_found = True
+			if not stock_found:
+				self.db_user['stocks'].append({
+					'stock_name': stock_name,
+					'quantity_owned': quantity
+				})
+		else:
+			raise ValueError('Stock entered is not available for trading')
+		print("Finished adding stocks")
+		self.write_db()
 
-    def take_stock(self, stock_name, quantity):
-        self.update()
-        print("Taking '{}' stock from user: {} ", stock_name, self.username)
-        if is_whitelisted(stock_name):
-            has_enough_stock = False
-            for stock_entry in self.db_user['stocks']:
-                if stock_entry['stock_name'] == stock_name and int(stock_entry['quantity_owned']) > quantity:
-                    stock_entry['quantity_owned'] = int(stock_entry['quantity_owned']) - quantity
-                    has_enough_stock = True
-            if not has_enough_stock:
-                raise ValueError('Insufficient quantity of stock')
-        else:
-            raise ValueError('Stock entered is not available for trading')
-        self.write_db()
+	def take_stock(self, stock_name, quantity):
+		self.update()
+		print("Taking '{}' stock from user: {} ", stock_name, self.username)
+		if is_whitelisted(stock_name):
+			has_enough_stock = False
+			for stock_entry in self.db_user['stocks']:
+				if stock_entry['stock_name'] == stock_name and int(stock_entry['quantity_owned']) > quantity:
+					stock_entry['quantity_owned'] = int(stock_entry['quantity_owned']) - quantity
+					has_enough_stock = True
+			if not has_enough_stock:
+				raise ValueError('Insufficient quantity of stock')
+		else:
+			raise ValueError('Stock entered is not available for trading')
+		self.write_db()
 
-    def add_kreddit(self, amount):
-        self.update()
-        self.db_user['balance'] = float(self.db_user['balance']) + float(amount)
-        self.write_db()
+	def add_kreddit(self, amount):
+		self.update()
+		self.db_user['balance'] = float(self.db_user['balance']) + float(amount)
+		self.write_db()
 
-    def take_kreddit(self, amount):
-        self.update()
-        if float(self.db_user['balance']) > float(amount):
-            self.db_user['balance'] = float(self.db_user['balance']) - float(amount)
-        else:
-            raise ValueError('Insufficient funds')
-        self.write_db()
+	def take_kreddit(self, amount):
+		self.update()
+		if float(self.db_user['balance']) > float(amount):
+			self.db_user['balance'] = float(self.db_user['balance']) - float(amount)
+		else:
+			raise ValueError('Insufficient funds')
+		self.write_db()
 
 def create_user(username):
-    user = {
-        "permission_level": get_permission_level(username),
-        "username": username,
-        "balance": get_initial_balance(),
-        "stocks": []
-    }
-    db.users.insert_one(user)
-    return user
+	user = {
+		"permission_level": get_permission_level(username),
+		"username": username,
+		"balance": get_initial_balance(),
+		"stocks": []
+	}
+	db.users.insert_one(user)
+	return user
 
 def get_initial_balance():
-    return 10000
+	return 10000
 
 def get_permission_level(username):
-    if reddit.is_mod(username, settings['mod_list_sub']):
-        return 2
-    return 1
+	if reddit.is_mod(username, settings['mod_list_sub']):
+		return 2
+	return 1
 
 def update_whitelist():
-    whitelist_cache['subreddits'] = db.whitelist.find()
+	whitelist_cache['subreddits'] = db.whitelist.find()
 
 def is_whitelisted(subreddit):
-    for sub in db.whitelist.find():
-        if sub['subreddit'] == subreddit:
-            return True
-    return False
+	for sub in db.whitelist.find():
+		if sub['subreddit'] == subreddit:
+			return True
+	return False
 

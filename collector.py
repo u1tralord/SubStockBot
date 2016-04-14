@@ -43,6 +43,11 @@ def update_stock_properties(subname):
 	db.stocks.update_one({'stock_name': subname}, {
         '$set': db_stock
     }, upsert=True)
+    
+#Returns an integer value representing the number of subscribers to a sub.
+#	 subname = string value of subreddit to be evaluated
+def get_subscribers(subname):
+	return get_json("/r/{}/about".format(subname))['data']['subscribers']
 
 # Returns an integer value representing the calculated stock value
 #     subname = string value of subreddit to be evaluated
@@ -87,3 +92,4 @@ def get_upvote_total(rawPostsJson):
 		jsonPostData = rawPost["data"]
 		upvoteTotal += jsonPostData["score"]
 	return upvoteTotal
+	
