@@ -1,6 +1,7 @@
 from wrappers import db as db_wrapper
 from wrappers.toolbox import *
 from user import *
+import wrappers.reddit
 from threading import Lock
 import pymongo
 
@@ -59,9 +60,10 @@ def place_sell(username, stock, quantity, unit_bid):
 
 def match_offers():
 	print("Matching offers")
-	buys = db.market.find({'offer': 'buy'}).sort("offer_created", 1)
+	#Orders to buy a stock for x kreddits sorted from lowest to highest
+	buys = db.market.find({'offer': 'buy'}).sort("unit_bid", pymongo.ASCENDING)
 	for buy in buys:
-		for sale in db.market.find({'offer': 'sell', 'stock_name': buy['stock_name']}).sort("offer_created", 1):
+		for sale in db.market.find({'offer': 'sell', 'stock_name': buy['stock_name']}).sort("unit_bid", pymongo.ASCENDING):
 			if float(buy['unit_bid']) >= float(sale['unit_bid']):
 				make_transfer(buy, sale)
 
@@ -95,17 +97,20 @@ def make_transfer(buy, sale):
 	transaction_price = transaction_quantity * float(sale['unit_bid'])
 	buyer_remainder = transaction_price - buyer_price
 
+	# Send private message -> buyer and seller with transaction info
+	reddit.send_message(buyer.username, "Stock Bought!", "You have bought {} shares of {} stock from {} for {} kreddits.".format(transaction_quantity, buy['stock_name'], seller.username, transaction_price) )
+	reddit.send_message(seller.username, "Stock Sold!", "You have sold {} shares of {} stock to {} for {} kreddits.".format(transaction_quantity, sale['stock_name'], buyer.username, transaction_price) )
+	
 	if buy['quantity'] == 0:
 		delete_offer(buy)
 	if sale['quantity'] == 0:
 		delete_offer(sale)
-
-	# Send private message -> buyer and seller with transaction info
+	
 	seller.add_kreddit(transaction_price)
 	buyer.add_kreddit(buyer_remainder)
 	buyer.add_stock(sale['stock_name'], transaction_quantity)
-	print("Sale {} -> {} for {} of {} stock at {} each (Total: {})".format(seller.get_username(),
-																		   buyer.get_username(),
+	print("Sale {} -> {} for {} of {} stock at {} each (Total: {})".format(seller.username,
+																		   buyer.username,
 																		   transaction_quantity,
 																		   sale['stock_name'],
 																		   sale['unit_bid'],
