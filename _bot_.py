@@ -17,8 +17,9 @@ with open("profile.config") as f:
 def handle_posts_thread(post):
 	database_entry = db.processed_posts.find_one({"post_id": post.id})
 	if database_entry is None and str(post.author) != config['reddit']['username']:
-		print()
-		print("|-" + str(post.author) + "-||-" + config['reddit']['username'] + "-|")
+		print("FIXME!!! Somehow the bots outgoing messages are getting added to the db.")
+		print("This could quickly fill up the db with useless garbage.")
+		print("Only happens when we use the 'send_message' function in reddit.py")
 		print("[{}] {}: {}".format("cmt", post.author, post.body))
 		db.processed_posts.insert_one({
 			'post_id': post.id,
