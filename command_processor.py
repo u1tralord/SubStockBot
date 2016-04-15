@@ -93,8 +93,8 @@ def get_profile(args, comment):
 	print("Commenting Profile")
 	username = comment.author.name
 	user = User(username)
-	stocks = user.get_stocks()
-	balance = user.get_balance()
+	stocks = user.stocks
+	balance = user.balance
 	table = "Stock Name|Stock Quantity|Stock Value\n" \
 			":--|--:|--:\n"
 	for stock in stocks:

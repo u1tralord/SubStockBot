@@ -25,16 +25,35 @@ with open("settings.config") as f:
 
 class User:
 	def __init__(self, username):
-		self.username = username
+		self._username = username
 		self.update()
-
-	def get_username(self):
-		return self.username
-
-	def get_balance(self):
+	
+	@property
+	def username(self):
+		return self._username
+		
+	@username.setter
+	def username(self, strValue):
+		try:
+			self._username = strValue
+		except:
+			return False
+		return True
+	
+	@property
+	def balance(self):
 		return self.db_user['balance']
-
-	def get_stocks(self):
+		
+	@balance.setter
+	def balance(self, floatValue):
+		try:
+			self.db_user['balance'] = floatValue
+		except:
+			return False
+		return True
+	
+	@property
+	def stocks(self):
 		return self.db_user['stocks']
 
 	def update(self):
