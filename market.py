@@ -22,6 +22,7 @@ placeOfferLock = Lock()
 
 def _place_offer(offer_type, username, stock, quantity, unit_bid):
 	with placeOfferLock:
+        # id = base64.b64encode(uuid.uuid4().bytes)[:5]
 		id = 0
 		while db.market.find_one({'id': id}):
 			id += 1
