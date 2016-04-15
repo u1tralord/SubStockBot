@@ -21,21 +21,21 @@ db = db_wrapper.get_instance()
 placeOfferLock = Lock()
 
 def _place_offer(offer_type, username, stock, quantity, unit_bid):
-	
-	id = 0
-	while db.market.find_one({'id': id}):
-		id += 1
-		
-	db.market.insert_one({
-		"offer": offer_type,
-		"id": id,
-		"username": username,
-		"stock_name": stock,
-		"quantity": quantity,  # Used to keep track of how many stocks are left to buy/sell in this offer
-		"total_quantity": quantity,  # This will not be reduced as units of stock from this offer sell.
-									 # Used for tracking percentage complete
-		"unit_bid": unit_bid,
-		"offer_created": current_utc_time_millis()
+	with placeOfferLock:
+		id = 0
+		while db.market.find_one({'id': id}):
+			id += 1
+			
+		db.market.insert_one({
+			"offer": offer_type,
+			"id": id,
+			"username": username,
+			"stock_name": stock,
+			"quantity": quantity,  # Used to keep track of how many stocks are left to buy/sell in this offer
+			"total_quantity": quantity,  # This will not be reduced as units of stock from this offer sell.
+										 # Used for tracking percentage complete
+			"unit_bid": unit_bid,
+			"offer_created": current_utc_time_millis()
 	})
 
 def place_buy(username, stock, quantity, unit_bid):
@@ -43,8 +43,7 @@ def place_buy(username, stock, quantity, unit_bid):
 	user = User(username)
 	try:
 		user.take_kreddit(float(quantity) * float(unit_bid))
-		with placeOfferLock:
-			_place_offer("buy", username, stock, quantity, unit_bid)
+		_place_offer("buy", username, stock, quantity, unit_bid)
 	except ValueError as ve:
 		raise ve
 
@@ -53,8 +52,7 @@ def place_sell(username, stock, quantity, unit_bid):
 	user = User(username)
 	try:
 		user.take_stock(stock, quantity)
-		with placeOfferLock:
-			_place_offer("sell", username, stock, quantity, unit_bid)
+		_place_offer("sell", username, stock, quantity, unit_bid)
 	except ValueError as ve:
 		raise ve
 
