@@ -34,11 +34,29 @@ class User:
 	
 	@property
 	def balance(self):
+		self.update()
 		return self.db_user['balance']
+		
+	@balance.setter
+	def balance(self, amount):
+		self.update()
+		self.db_user['balance'] = amount
+		if self.db_user['balance'] < 0:
+			self.balance = 0
+			return
+		self.write_db()
 	
 	@property
 	def stocks(self):
+		self.update()
 		return self.db_user['stocks']
+		
+	@stocks.setter
+	def stocks(self, list):
+		self.update()
+		self.db_user['stocks'] = list
+		self.write_db()
+		
 
 	def update(self):
 		db_user = db.users.find_one({'username': self.username})
@@ -57,12 +75,12 @@ class User:
 		print("Adding '{}' stock to user: {} ".format(stock_name, self.username))
 		if is_whitelisted(stock_name):
 			stock_found = False
-			for stock_entry in self.db_user['stocks']:
+			for stock_entry in self.stocks:
 				if stock_entry['stock_name'] == stock_name:
 					stock_entry['quantity_owned'] = int(stock_entry['quantity_owned']) + quantity
 					stock_found = True
 			if not stock_found:
-				self.db_user['stocks'].append({
+				self.stocks.append({
 					'stock_name': stock_name,
 					'quantity_owned': quantity
 				})
@@ -83,14 +101,14 @@ class User:
 		print("Taking '{}' stock from user: {} ", stock_name, self.username)
 		if is_whitelisted(stock_name):
 			has_enough_stock = False
-			for stock_entry in self.db_user['stocks']:
+			for stock_entry in self.stocks:
 				if stock_entry['stock_name'] == stock_name and int(stock_entry['quantity_owned']) >= quantity:
 					stock_entry['quantity_owned'] = int(stock_entry['quantity_owned']) - quantity
 					has_enough_stock = True
 					'''
-					#I don't work...
+					#Doesn't work...
 					if int(stock_entry['quantity_owned']) == quantity:
-						self.db_user['stocks'].delete_many({'quantity_owned': 0})
+						self.stocks.pop(stock_entry)
 					'''
 			if not has_enough_stock:
 				raise ValueError('Insufficient quantity of stock')
@@ -99,17 +117,13 @@ class User:
 		self.write_db()
 
 	def add_kreddit(self, amount):
-		self.update()
-		self.db_user['balance'] = float(self.db_user['balance']) + float(amount)
-		self.write_db()
+		self.balance += amount
 
 	def take_kreddit(self, amount):
-		self.update()
-		if float(self.db_user['balance']) >= float(amount):
-			self.db_user['balance'] = float(self.db_user['balance']) - float(amount)
+		if self.balance >= amount:
+			self.balance -= amount
 		else:
 			raise ValueError('Insufficient funds')
-		self.write_db()
 
 def create_user(username):
 	user = {

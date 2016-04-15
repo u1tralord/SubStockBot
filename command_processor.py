@@ -108,17 +108,17 @@ def get_orders(args, comment):
 	username = comment.author.name
 	buys = db.market.find({'offer': 'buy', 'username': username}).sort("offer_created", 1)
 	sells = db.market.find({'offer': 'sell', 'username': username}).sort("offer_created", 1)
-	buyTable = "~+=|Buy Orders|=+~\n\n\n"
-	buyTable += "Stock Name|Asking Bid|Order Id\n" \
-			   ":--|--:|--:\n"
+	buyTable = "~+=|You Want to Buy|=+~\n\n\n"
+	buyTable += "Stock Name|Asking Bid|Quantity|Order Id\n" \
+			   ":--|:--|--:|--:\n"
 	for buyoffer in buys:
-		buyTable += "{}|{}|{}\n".format(buyoffer['stock_name'], buyoffer['unit_bid'], buyoffer['id'])
+		buyTable += "{}|{}|{}/{}|{}\n".format(buyoffer['stock_name'], buyoffer['unit_bid'], buyoffer['quantity'], buyoffer['total_quantity'], buyoffer['id'])
 	buyTable += '\n\n\n'
-	sellTable = "~+=|Sell Orders|=+~\n\n\n"
-	sellTable += "Stock Name|Asking Price|Order Id\n" \
-				":--|--:|--:\n"
+	sellTable = "~+=|You Want to Sell|=+~\n\n\n"
+	sellTable += "Stock Name|Asking Price|Quantity|Order Id\n" \
+				":--|:--|--:|--:\n"
 	for selloffer in sells:
-		sellTable += "{}|{}|{}\n".format(selloffer['stock_name'], selloffer['unit_bid'], selloffer['id'])
+		sellTable += "{}|{}|{}/{}|{}\n".format(selloffer['stock_name'], selloffer['unit_bid'], selloffer['quantity'], selloffer['total_quantity'], selloffer['id'])
 		
 	orders_comment = "{}\'s Orders:  \n\n\n".format(username) + buyTable + sellTable
 	reddit.reply(comment, orders_comment)
