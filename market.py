@@ -98,8 +98,8 @@ def make_transfer(buy, sale):
 	buyer_remainder = transaction_price - buyer_price
 
 	# Send private message -> buyer and seller with transaction info
-	reddit.send_message(buyer.username, "Stock Bought!", "You have bought {} shares of {} stock from {} for {} kreddits.".format(transaction_quantity, buy['stock_name'], seller.username, transaction_price) )
-	reddit.send_message(seller.username, "Stock Sold!", "You have sold {} shares of {} stock to {} for {} kreddits.".format(transaction_quantity, sale['stock_name'], buyer.username, transaction_price) )
+	reddit.send_message(buyer.username, "Stock Bought!", "You have bought {} shares of {} stock from {} for {} kreddits each, {} kredits in total.".format(transaction_quantity, buy['stock_name'], seller.username, transaction_price/transaction_quantity, transaction_price) )
+	reddit.send_message(seller.username, "Stock Sold!", "You have sold {} shares of {} stock to {} for {} kreddits each, {} kredits in total.".format(transaction_quantity, sale['stock_name'], buyer.username, transaction_price/transaction_quantity, transaction_price) )
 	
 	if buy['quantity'] == 0:
 		delete_offer(buy)

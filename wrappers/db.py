@@ -5,6 +5,7 @@ import pymongo
 config = None
 with open("profile.config") as f:
 	config = json.load(f)
+	f.close()
 
 def get_instance():
 	# Connect to the database

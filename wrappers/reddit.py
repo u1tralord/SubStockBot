@@ -12,6 +12,7 @@ from wrappers.toolbox import*
 config = None
 with open("profile.config") as f:
 	config = json.load(f)
+	f.close()
 
 r = praw.Reddit("Subreddit stock monitor. More info at /r/subredditstockmarket."
 				"Created by u/u1tralord, u/Obzoen, and u/CubeMaster7  v: 0.0")
