@@ -31,26 +31,10 @@ class User:
 	@property
 	def username(self):
 		return self._username
-		
-	@username.setter
-	def username(self, strValue):
-		try:
-			self._username = strValue
-		except:
-			return False
-		return True
 	
 	@property
 	def balance(self):
 		return self.db_user['balance']
-		
-	@balance.setter
-	def balance(self, floatValue):
-		try:
-			self.db_user['balance'] = floatValue
-		except:
-			return False
-		return True
 	
 	@property
 	def stocks(self):
