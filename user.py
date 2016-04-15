@@ -69,14 +69,26 @@ class User:
 		self.write_db()
 
 	def take_stock(self, stock_name, quantity):
+		print()
+		print ("-------------------------------")
+		print ("-~+=!|BIG ANNOYING WARNING/REMINDER PRINT!!!|!=+~-")
+		print ("FIX ME!!!! >>> I DO NOT DELETE THE DB ENTRY WHEN A STOCK'S QUANTITY == 0!!! >>> I am the take_stock() method in the User class in user.py >>>")
+		print ("This could lead to having an unneccessarily large db and will make finding stuff in it slower.")
+		print ("-------------------------------")
+		print()
 		self.update()
 		print("Taking '{}' stock from user: {} ", stock_name, self.username)
 		if is_whitelisted(stock_name):
 			has_enough_stock = False
 			for stock_entry in self.db_user['stocks']:
-				if stock_entry['stock_name'] == stock_name and int(stock_entry['quantity_owned']) > quantity:
+				if stock_entry['stock_name'] == stock_name and int(stock_entry['quantity_owned']) >= quantity:
 					stock_entry['quantity_owned'] = int(stock_entry['quantity_owned']) - quantity
 					has_enough_stock = True
+					'''
+					#I don't work...
+					if int(stock_entry['quantity_owned']) == quantity:
+						self.db_user['stocks'].delete_many({'quantity_owned': 0})
+					'''
 			if not has_enough_stock:
 				raise ValueError('Insufficient quantity of stock')
 		else:
@@ -90,7 +102,7 @@ class User:
 
 	def take_kreddit(self, amount):
 		self.update()
-		if float(self.db_user['balance']) > float(amount):
+		if float(self.db_user['balance']) >= float(amount):
 			self.db_user['balance'] = float(self.db_user['balance']) - float(amount)
 		else:
 			raise ValueError('Insufficient funds')

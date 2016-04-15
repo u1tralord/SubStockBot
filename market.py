@@ -18,8 +18,14 @@ import pymongo
 db = db_wrapper.get_instance()
 
 def _place_offer(offer_type, username, stock, quantity, unit_bid):
+	
+	id = 0
+	while db.market.find_one({'id': id}):
+		id += 1
+		
 	db.market.insert_one({
 		"offer": offer_type,
+		"id": id,
 		"username": username,
 		"stock_name": stock,
 		"quantity": quantity,  # Used to keep track of how many stocks are left to buy/sell in this offer
@@ -37,7 +43,6 @@ def place_buy(username, stock, quantity, unit_bid):
 		_place_offer("buy", username, stock, quantity, unit_bid)
 	except ValueError as ve:
 		raise ve
-
 
 def place_sell(username, stock, quantity, unit_bid):
 	print("{} is selling {} {} stocks at {} kreddit each".format(username, str(quantity), stock, str(unit_bid)))
@@ -101,4 +106,3 @@ def make_transfer(buy, sale):
 																		   sale['stock_name'],
 																		   sale['unit_bid'],
 																		   transaction_price))
-
