@@ -1,6 +1,7 @@
 from wrappers import db as db_wrapper
 from wrappers.toolbox import *
 from user import *
+from threading import Lock
 import pymongo
 
 '''
@@ -16,6 +17,8 @@ import pymongo
 
 # Connect to the database
 db = db_wrapper.get_instance()
+
+placeOfferLock = Lock()
 
 def _place_offer(offer_type, username, stock, quantity, unit_bid):
 	
@@ -40,7 +43,8 @@ def place_buy(username, stock, quantity, unit_bid):
 	user = User(username)
 	try:
 		user.take_kreddit(float(quantity) * float(unit_bid))
-		_place_offer("buy", username, stock, quantity, unit_bid)
+		with placeOfferLock:
+			_place_offer("buy", username, stock, quantity, unit_bid)
 	except ValueError as ve:
 		raise ve
 
@@ -49,7 +53,8 @@ def place_sell(username, stock, quantity, unit_bid):
 	user = User(username)
 	try:
 		user.take_stock(stock, quantity)
-		_place_offer("sell", username, stock, quantity, unit_bid)
+		with placeOfferLock:
+			_place_offer("sell", username, stock, quantity, unit_bid)
 	except ValueError as ve:
 		raise ve
 
