@@ -1,6 +1,7 @@
 import market
 import command_processor
 import threading
+from wrappers import pymo
 from wrappers import db as db_wrapper
 from wrappers import reddit
 from wrappers.toolbox import*
@@ -15,8 +16,7 @@ with open("profile.config") as f:
 	f.close()
 
 def handle_posts_thread(post):
-	with dbLock:
-		database_entry = db.processed_posts.find_one({"post_id": post.id})
+	database_entry = pymo.find_one(db.processed_posts, {"post_id": post.id})  #db.processed_posts.find_one({"post_id": post.id})
 	if database_entry is None and str(post.author) != config['reddit']['username']:
 		print("FIXME!!! Somehow the bots outgoing messages are getting added to the db.")
 		print("This could quickly fill up the db with useless garbage.")

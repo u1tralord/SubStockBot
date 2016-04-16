@@ -2,6 +2,7 @@ import json
 from wrappers import db as db_wrapper
 from wrappers import reddit
 from wrappers.toolbox import *
+from wrappers import pymo
 
 db = db_wrapper.get_instance()
 
@@ -13,11 +14,10 @@ db = db_wrapper.get_instance()
 		* Add/Remove Stock functions
 '''
 
-with dbLock:
-	whitelist_cache = {
-		'last_updated': current_utc_time(),
-		'subreddits': db.whitelist.find()
-	}
+whitelist_cache = {
+	'subreddits': pymo.find(db.whitelist, {}), #db.whitelist.find()
+	'last_updated': current_utc_time()
+}
 
 # Load the general settings from file
 settings = None
@@ -48,8 +48,7 @@ class User:
 		if self._db_user == None or self.balance == None:
 			self.update()
 		self._balance = amount
-		with dbLock:
-			self._db_user['balance'] = amount
+		self._db_user['balance'] = amount
 		if self._db_user['balance'] < 0:
 			self.balance = 0
 			return #returns here because of recursion so we aren't writing to the db twice.
@@ -67,24 +66,23 @@ class User:
 		if self._db_user == None or self._stocks == None:
 			self.update()
 		self._stocks = list
-		with dbLock:
-			self._db_user['stocks'] = list
+		self._db_user['stocks'] = list
 		self.write_db()
 		
 
 	def update(self):
-		with dbLock:
-			db_user = db.users.find_one({'username': self.username})
+		db_user = pymo.find_one(db.users, {'username': self.username}) #db.users.find_one({'username': self.username})
 		if db_user is None:
 			db_user = create_user(self.username)
 		db_user['permission_level'] = get_permission_level(self.username)
 		self._db_user = db_user
 
 	def write_db(self):
-		with dbLock:
-			db.users.update_one({'username': self.username}, {
-				'$set': self._db_user
-			}, upsert=True)
+		pymo.update_one(db.users, 
+			{'username': self.username}, 
+			{ '$set': self._db_user }, 
+			upsert=True
+			) #db.users.update_one({'username': self.username}, { '$set': self._db_user }, upsert=True)
 
 	def add_stock(self, stock_name, quantity):
 		self.update()
@@ -160,12 +158,10 @@ def get_permission_level(username):
 	return 1
 
 def update_whitelist():
-	with dbLock:
-		whitelist_cache['subreddits'] = db.whitelist.find()
+	whitelist_cache['subreddits'] = pymo.find(db.whitelist, {}) #db.whitelist.find()
 
 def is_whitelisted(subreddit):
-	with dbLock:
-		whitelist = db.whitelist.find()
+	whitelist = pymo.find(db.whitelist, {}) #db.whitelist.find()
 	for sub in whitelist:
 		if sub['subreddit'] == subreddit:
 			return True

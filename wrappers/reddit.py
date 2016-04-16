@@ -47,7 +47,6 @@ def get_moderators(subreddit):
 def is_mod(username, subreddit):
 	mod_status = False
 	for mod_name in get_moderators(subreddit):
-		print (str(mod_name) + " = mod_name")
 		if str(mod_name) == username:
 			mod_status = True
 	return mod_status

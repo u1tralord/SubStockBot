@@ -1,4 +1,5 @@
 from wrappers import db as db_wrapper
+from wrappers import pymo
 
 db = db_wrapper.get_instance()
 
@@ -57,10 +58,7 @@ class Stock():
 	def update(self):
 		print("FIXME!!! I run twice whenever I should only run once when getting a stocks value!")
 		print("Running stock.update()...dummy method")
-		'''
-		with dbLock:
-			db_stock = db.stocks.find_one({'stock_name': self.stock_name})
-		'''
+		#db_stock = pymo.find_one(db.stocks, {'stock_name': self.stock_name})
 		db_stock = None #TEMPORARY!!!
 		if db_stock is None:
 			db_stock = create_stock(self.stock_name)
@@ -68,12 +66,7 @@ class Stock():
 		
 	def write_db(self):
 		print("Running writ_db...dummy method")
-		'''
-		with dbLock:
-			db.stocks.update_one({'stock_name': self.stock_name}, {
-				'$set': self._db_stock
-			}, upsert=True)
-		'''
+		#pymo.update_one(db.stocks, {'stock_name': self.stock_name}, {'$set': self._db_stock}, upsert=True)
 		
 	def add_value(self, amount):
 		self.stock_value += amount
