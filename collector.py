@@ -93,3 +93,23 @@ def get_upvote_total(rawPostsJson):
 		jsonPostData = rawPost["data"]
 		upvoteTotal += jsonPostData["score"]
 	return upvoteTotal
+	
+if __name__ == '__main__':
+	#talesfromtechsupport, funny, adviceanimals, askreddit, leagueoflegends, me_irl, crazyideas, accidentalcomedy
+	subsTable = ['talesfromtechsupport', 'funny', 'adviceanimals', 'askreddit', 'leagueoflegends', 'me_irl', 'crazyideas', 'accidentalcomedy']
+	outfile = open('datafile.txt', 'w')
+	for subname in subsTable:
+		rawAboutJson = get_json("/r/{}/about".format(subname))
+		rawCommentsJson = get_json("/r/{}/comments".format(subname))
+		rawPostsJson = get_json("/r/{}".format(subname))
+		
+		outfile.write( "-----\n" )
+		outfile.write( 'Subname: {}\n'.format(subname) )
+		#comment frequency, upvote sum, upvote average, and subscribers
+		outfile.write( 'Comment Frequency: {}\n'.format(get_comment_freq(rawCommentsJson)) )
+		outfile.write( 'Upvote Total: {}\n'.format(get_upvote_total(rawPostsJson)) )
+		outfile.write( 'Upvote Average: {}\n'.format(get_avg_post_score(rawPostsJson)) )
+		outfile.write( 'Subscribers: {}\n'.format(get_subscribers(rawAboutJson)) )
+		outfile.write( "-----\n" )
+	outfile.close()
+		
