@@ -18,6 +18,8 @@ import pymongo
 
 # Connect to the database
 db = db_wrapper.get_instance()
+#idBloomFilter = BloomFilter(10000000, 0.0001)
+        
 
 def _place_offer(offer_type, username, stock, quantity, unit_bid):
 	with pymo.pymongoLock:
