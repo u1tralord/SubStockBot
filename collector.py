@@ -21,7 +21,9 @@ def get_json(path, after=None):
     return data
 
 def update_stocks():
-	for subreddit in db.whitelist.find():
+	with dbLock:
+		whitelist = db.whitelist.find()
+	for subreddit in whitelist:
 		collectSubStats(sub['subreddit'])
 
 def update_stock_properties(subname):
@@ -34,8 +36,7 @@ def update_stock_properties(subname):
 			"bot_owned_quantity": 10000, # Total stock available for purchase from bot
 			"stock_volume": 10000, # Total stock available on market
 		}
-		with dbLock:
-			db.stocks.insert_one(db_stock)
+		db.stocks.insert_one(db_stock)
 
 	##
 	# Do stuff here to modify stock properties

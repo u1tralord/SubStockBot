@@ -13,10 +13,11 @@ db = db_wrapper.get_instance()
 		* Add/Remove Stock functions
 '''
 
-whitelist_cache = {
-	'last_updated': current_utc_time(),
-	'subreddits': db.whitelist.find()
-}
+with dbLock:
+	whitelist_cache = {
+		'last_updated': current_utc_time(),
+		'subreddits': db.whitelist.find()
+	}
 
 # Load the general settings from file
 settings = None
@@ -72,7 +73,8 @@ class User:
 		
 
 	def update(self):
-		db_user = db.users.find_one({'username': self.username})
+		with dbLock:
+			db_user = db.users.find_one({'username': self.username})
 		if db_user is None:
 			db_user = create_user(self.username)
 		db_user['permission_level'] = get_permission_level(self.username)
@@ -146,8 +148,7 @@ def create_user(username):
 		"balance": get_initial_balance(),
 		"stocks": []
 	}
-	with dbLock:
-		db.users.insert_one(user)
+	db.users.insert_one(user)
 	return user
 
 def get_initial_balance():
@@ -159,10 +160,13 @@ def get_permission_level(username):
 	return 1
 
 def update_whitelist():
-	whitelist_cache['subreddits'] = db.whitelist.find()
+	with dbLock:
+		whitelist_cache['subreddits'] = db.whitelist.find()
 
 def is_whitelisted(subreddit):
-	for sub in db.whitelist.find():
+	with dbLock:
+		whitelist = db.whitelist.find()
+	for sub in whitelist:
 		if sub['subreddit'] == subreddit:
 			return True
 	return False

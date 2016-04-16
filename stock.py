@@ -57,7 +57,11 @@ class Stock():
 	def update(self):
 		print("FIXME!!! I run twice whenever I should only run once when getting a stocks value!")
 		print("Running stock.update()...dummy method")
-		db_stock = None #db.stocks.find_one({'stock_name': self.stock_name})
+		'''
+		with dbLock:
+			db_stock = db.stocks.find_one({'stock_name': self.stock_name})
+		'''
+		db_stock = None #TEMPORARY!!!
 		if db_stock is None:
 			db_stock = create_stock(self.stock_name)
 		self._db_stock = db_stock
@@ -95,10 +99,7 @@ def create_stock(stock_name):
 		"stock_value": get_initial_stock_value(),
 		"stock_volume": get_initial_stock_volume()
 	}
-	'''
-	with dbLock:
-		db.users.insert_one(user)
-	'''
+	#db.users.insert_one(user)
 	return user
 	
 def get_initial_stock_value():

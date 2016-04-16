@@ -19,27 +19,24 @@ import pymongo
 # Connect to the database
 db = db_wrapper.get_instance()
 
-placeOfferLock = Lock()
-
 def _place_offer(offer_type, username, stock, quantity, unit_bid):
-	with placeOfferLock:
-		with dbLock:
-			# id = base64.b64encode(uuid.uuid4().bytes)[:5]
-			id = 0
-			while db.market.find_one({'id': id}):
-				id += 1
-			
-			db.market.insert_one({
-				"offer": offer_type,
-				"id": id,
-				"username": username,
-				"stock_name": stock,
-				"quantity": quantity,  # Used to keep track of how many stocks are left to buy/sell in this offer
-				"total_quantity": quantity,  # This will not be reduced as units of stock from this offer sell.
-											 # Used for tracking percentage complete
-				"unit_bid": unit_bid,
-				"offer_created": current_utc_time_millis()
-			})
+	with dbLock:
+		# id = base64.b64encode(uuid.uuid4().bytes)[:5]
+		id = 0
+		while db.market.find_one({'id': id}):
+			id += 1
+		
+		db.market.insert_one({
+			"offer": offer_type,
+			"id": id,
+			"username": username,
+			"stock_name": stock,
+			"quantity": quantity,  # Used to keep track of how many stocks are left to buy/sell in this offer
+			"total_quantity": quantity,  # This will not be reduced as units of stock from this offer sell.
+										 # Used for tracking percentage complete
+			"unit_bid": unit_bid,
+			"offer_created": current_utc_time_millis()
+		})
 
 def place_buy(username, stock, quantity, unit_bid):
 	print("{} is buying {} {} stocks at {} kreddit each".format(username, str(quantity), stock, str(unit_bid)))
@@ -62,7 +59,8 @@ def place_sell(username, stock, quantity, unit_bid):
 def match_offers():
 	print("Matching offers")
 	#Orders to buy a stock for x kreddits sorted from lowest to highest
-	buys = db.market.find({'offer': 'buy'}).sort("unit_bid", pymongo.ASCENDING)
+	with dbLock:
+		buys = db.market.find({'offer': 'buy'}).sort("unit_bid", pymongo.ASCENDING)
 	for buy in buys:
 		for sale in db.market.find({'offer': 'sell', 'stock_name': buy['stock_name']}).sort("unit_bid", pymongo.ASCENDING):
 			if float(buy['unit_bid']) >= float(sale['unit_bid']):

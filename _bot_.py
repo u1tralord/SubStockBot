@@ -15,17 +15,17 @@ with open("profile.config") as f:
 	f.close()
 
 def handle_posts_thread(post):
-	database_entry = db.processed_posts.find_one({"post_id": post.id})
+	with dbLock:
+		database_entry = db.processed_posts.find_one({"post_id": post.id})
 	if database_entry is None and str(post.author) != config['reddit']['username']:
 		print("FIXME!!! Somehow the bots outgoing messages are getting added to the db.")
 		print("This could quickly fill up the db with useless garbage.")
 		print("Only happens when we use the 'send_message' function in reddit.py")
 		print("[{}] {}: {}".format("cmt", post.author, post.body))
-		with dbLock:
-			db.processed_posts.insert_one({
-				'post_id': post.id,
-				'utc': current_utc_time()
-			})
+		db.processed_posts.insert_one({
+			'post_id': post.id,
+			'utc': current_utc_time()
+		})
 		command_processor.process_post(post)
 
 # Gets all comments the user was mentioned in, and processes the comment

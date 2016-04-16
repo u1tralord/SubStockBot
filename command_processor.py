@@ -108,8 +108,9 @@ def get_profile(args, comment):
 def get_orders(args, comment):
 	print("Commenting Orders")
 	username = comment.author.name
-	buys = db.market.find({'offer': 'buy', 'username': username}).sort("offer_created", 1)
-	sells = db.market.find({'offer': 'sell', 'username': username}).sort("offer_created", 1)
+	with dbLock:
+		buys = db.market.find({'offer': 'buy', 'username': username}).sort("offer_created", 1)
+		sells = db.market.find({'offer': 'sell', 'username': username}).sort("offer_created", 1)
 	buyTable = "~+=|You Want to Buy|=+~\n\n\n"
 	buyTable += "Stock Name|Asking Bid|Quantity|Order Id\n" \
 			   ":--|:--|--:|--:\n"
@@ -139,7 +140,8 @@ def cancel_order(args, comment):
 		
 		if orderId is not None:
 			try:
-				order = db.market.find_one({'id': orderId, 'username': username})
+				with dbLock:
+					order = db.market.find_one({'id': orderId, 'username': username})
 				print(str(order['offer']))
 				if order['offer'] == 'sell':
 					reddit.reply(comment, "Canceled {} order Id: {} for {} kreddits. You have reclaimed {} shares of {} stock.".format(order['offer'], order['id'], order['unit_bid'], order['quantity'], order['stock_name']))
@@ -156,9 +158,9 @@ def list_all_orders(args, comment):
 	if len(args) >= 2:
 		print("Commenting Market List")
 		username = comment.author.name
-		
-		sells = db.market.find({'offer': 'sell', 'stock_name': args[1]}).sort("unit_bid", pymongo.ASCENDING)
-		buys = db.market.find({'offer': 'buy', 'stock_name': args[1]}).sort("unit_bid", pymongo.DESCENDING)
+		with dbLock:
+			sells = db.market.find({'offer': 'sell', 'stock_name': args[1]}).sort("unit_bid", pymongo.ASCENDING)
+			buys = db.market.find({'offer': 'buy', 'stock_name': args[1]}).sort("unit_bid", pymongo.DESCENDING)
 		
 		sellTable = "~+=|People Want to Sell|=+~\n\n\n"
 		sellTable += "Seller|Asking Price|Quantity|Order Id\n" \
