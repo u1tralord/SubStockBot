@@ -26,6 +26,9 @@ with open("settings.config") as f:
 class User:
 	def __init__(self, username):
 		self._username = username
+		self._balance = None
+		self._stocks = None
+		self.db_user = None
 		self.update()
 	
 	@property
@@ -34,26 +37,34 @@ class User:
 	
 	@property
 	def balance(self):
-		self.update()
-		return self.db_user['balance']
+		if self._balance == None:
+			self.update()
+			self._balance = self.db_user['balance']
+		return self._balance
 		
 	@balance.setter
 	def balance(self, amount):
-		self.update()
+		if self.db_user == None or self.balance == None:
+			self.update()
+		self._balance = amount 
 		self.db_user['balance'] = amount
 		if self.db_user['balance'] < 0:
 			self.balance = 0
-			return
+			return #returns here because of recursion so we aren't writing to the db twice.
 		self.write_db()
 	
 	@property
 	def stocks(self):
-		self.update()
-		return self.db_user['stocks']
+		if self._stocks == None:
+			self.update()
+			self._stocks = self.db_user['stocks']
+		return self._stocks
 		
 	@stocks.setter
 	def stocks(self, list):
-		self.update()
+		if self.db_user == None or self._stocks == None:
+			self.update()
+		self._stocks = list
 		self.db_user['stocks'] = list
 		self.write_db()
 		

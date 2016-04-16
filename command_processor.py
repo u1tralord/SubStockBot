@@ -1,5 +1,6 @@
 from wrappers import reddit
 import market
+from stock import *
 from user import *
 import pymongo
 
@@ -98,7 +99,8 @@ def get_profile(args, comment):
 	table = "Stock Name|Stock Quantity|Stock Value\n" \
 			":--|--:|--:\n"
 	for stock in stocks:
-		table += "{}|{}|{}\n".format(stock['stock_name'], stock['quantity_owned'], 0)
+		stockObj = Stock(stock['stock_name'])
+		table += "{}|{}|{}\n".format(stockObj.stock_name, stock['quantity_owned'], stockObj.stock_value)
 
 	profile_comment = "{}\'s Profile:  \nBalance: {}  \n\n\n".format(username, balance) + table
 	reddit.reply(comment, profile_comment)
