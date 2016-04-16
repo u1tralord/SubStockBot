@@ -54,14 +54,27 @@ def get_stock_value(subname):
 	rawAboutJson = get_json("/r/{}/about".format(subname))
 	rawCommentsJson = get_json("/r/{}/comments".format(subname))
 	rawPostsJson = get_json("/r/{}".format(subname))
+	rawNewPostsJson = get_json("/r/{}/new".format(subname))
 
 	comment_freq = get_comment_freq(rawCommentsJson)
+	post_freq = get_post_freq(rawNewPostsJson)
 	upvote_sum = get_upvote_total(rawPostsJson)
 	upvote_avg = get_avg_post_score(rawPostsJson)
 	subscribers = get_subscribers(rawAboutJson)
 	
 	# print("{} {} {}".format(comment_freq, upvote_sum, upvote_avg))
 	return -1 # Temporary return value
+
+# Returns an integer for the average time between posts.
+# Calculating the average difference between the UTC variable on comment json object
+#     rawPostsJson = raw json output of get_json() for comments path of desired subreddit
+def get_post_freq(rawPostsJson):
+	rawPosts = rawPostsJson['data']['children']
+	differenceTotal = 0
+	for x in range(1, len(rawPosts)):
+		diff = abs(rawPosts[x]['data']['created_utc'] - rawPosts[x-1]['data']['created_utc'])
+		differenceTotal += diff
+	return differenceTotal / (len(rawPosts)-1)
 
 # Returns an integer for the average time between comments.
 # Calculating the average difference between the UTC variable on comment json object
