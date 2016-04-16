@@ -6,5 +6,6 @@ TODO:
 
 * Bot function: start buying and selling stocks automatically based on its calculated value
 * Bot function: evaluate stock value
-* fix stock value to pull from db in profile function. -Deeredman1991
-* fix info command
+* fix stock value to pull from db in profile function.
+* fix info command.
+* create Stock class -Deeredman1991

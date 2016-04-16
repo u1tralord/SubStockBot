@@ -170,6 +170,7 @@ def list_orders(args, comment):
 			
 		orders_comment = "Market List:  \n\n\n" + sellTable + buyTable
 		reddit.reply(comment, orders_comment)
+
 commands = {
 	"buy": buy,
 	"sell": sell,
@@ -184,6 +185,3 @@ commands = {
 def is_command(command_args):
 	return command_args[0].lower() in commands
 	
-if __name__ == "__main__":
-	#get_orders('lol', 'lol')
-	pass
