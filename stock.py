@@ -7,7 +7,7 @@ db = db_wrapper.get_instance()
 class Stock():
 	def __init__(self, stock_name):
 		self._stock_name = stock_name
-		self.db_stock = None
+		self._db_stock = None
 		self._stock_value = None
 		self._stock_volume = None
 		self.update()
@@ -20,16 +20,16 @@ class Stock():
 	def stock_value(self):
 		if self._stock_value == None:
 			self.update()
-			self._stock_value = self.db_stock['stock_value']
+			self._stock_value = self._db_stock['stock_value']
 		return self._stock_value
 		
 	@stock_value.setter
 	def stock_value(self, amount):
-		if self.db_stock == None or self._stock_value == None:
+		if self._db_stock == None or self._stock_value == None:
 			self.update()
 		self._stock_value = amount
-		self.db_stock['stock_value'] = amount
-		if self.db_stock['stock_value'] < 0:
+		self._db_stock['stock_value'] = amount
+		if self._db_stock['stock_value'] < 0:
 			self.stock_value = 0
 			return #function returns here because of recursion...no need to write to the db twice...
 		self.write_db()
@@ -38,16 +38,16 @@ class Stock():
 	def stock_volume(self):
 		self.update()
 		if self._stock_volume == None:
-			self._stock_volume = self.db_stock['stock_volume']
+			self._stock_volume = self._db_stock['stock_volume']
 		return self._stock_volume
 		
 	@stock_volume.setter
 	def stock_volume(self, amount):
-		if self.db_stock == None or self._stock_volume == None:
+		if self._db_stock == None or self._stock_volume == None:
 			self.update()
 		self._stock_volume = amount
-		self.db_stock['stock_volume'] = amount
-		if self.db_stock['stock_volume'] < 0:
+		self._db_stock['stock_volume'] = amount
+		if self._db_stock['stock_volume'] < 0:
 			self.stock_volume = 0
 			return #function returns here because of recursion...no need to write to the db twice...
 		self.write_db()
@@ -58,13 +58,13 @@ class Stock():
 		db_stock = None #db.stocks.find_one({'stock_name': self.stock_name})
 		if db_stock is None:
 			db_stock = create_stock(self.stock_name)
-		self.db_stock = db_stock
+		self._db_stock = db_stock
 		
 	def write_db(self):
 		print("Running writ_db...dummy method")
 		'''
 		db.stocks.update_one({'stock_name': self.stock_name}, {
-			'$set': self.db_stock
+			'$set': self._db_stock
 		}, upsert=True)
 		'''
 		

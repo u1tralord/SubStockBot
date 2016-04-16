@@ -28,7 +28,7 @@ class User:
 		self._username = username
 		self._balance = None
 		self._stocks = None
-		self.db_user = None
+		self._db_user = None
 		self.update()
 	
 	@property
@@ -39,16 +39,16 @@ class User:
 	def balance(self):
 		if self._balance == None:
 			self.update()
-			self._balance = self.db_user['balance']
+			self._balance = self._db_user['balance']
 		return self._balance
 		
 	@balance.setter
 	def balance(self, amount):
-		if self.db_user == None or self.balance == None:
+		if self._db_user == None or self.balance == None:
 			self.update()
 		self._balance = amount 
-		self.db_user['balance'] = amount
-		if self.db_user['balance'] < 0:
+		self._db_user['balance'] = amount
+		if self._db_user['balance'] < 0:
 			self.balance = 0
 			return #returns here because of recursion so we aren't writing to the db twice.
 		self.write_db()
@@ -57,15 +57,15 @@ class User:
 	def stocks(self):
 		if self._stocks == None:
 			self.update()
-			self._stocks = self.db_user['stocks']
+			self._stocks = self._db_user['stocks']
 		return self._stocks
 		
 	@stocks.setter
 	def stocks(self, list):
-		if self.db_user == None or self._stocks == None:
+		if self._db_user == None or self._stocks == None:
 			self.update()
 		self._stocks = list
-		self.db_user['stocks'] = list
+		self._db_user['stocks'] = list
 		self.write_db()
 		
 
@@ -74,11 +74,11 @@ class User:
 		if db_user is None:
 			db_user = create_user(self.username)
 		db_user['permission_level'] = get_permission_level(self.username)
-		self.db_user = db_user
+		self._db_user = db_user
 
 	def write_db(self):
 		db.users.update_one({'username': self.username}, {
-			'$set': self.db_user
+			'$set': self._db_user
 		}, upsert=True)
 
 	def add_stock(self, stock_name, quantity):
