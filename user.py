@@ -46,8 +46,9 @@ class User:
 	def balance(self, amount):
 		if self._db_user == None or self.balance == None:
 			self.update()
-		self._balance = amount 
-		self._db_user['balance'] = amount
+		self._balance = amount
+		with dbLock:
+			self._db_user['balance'] = amount
 		if self._db_user['balance'] < 0:
 			self.balance = 0
 			return #returns here because of recursion so we aren't writing to the db twice.
@@ -65,7 +66,8 @@ class User:
 		if self._db_user == None or self._stocks == None:
 			self.update()
 		self._stocks = list
-		self._db_user['stocks'] = list
+		with dbLock:
+			self._db_user['stocks'] = list
 		self.write_db()
 		
 
@@ -77,9 +79,10 @@ class User:
 		self._db_user = db_user
 
 	def write_db(self):
-		db.users.update_one({'username': self.username}, {
-			'$set': self._db_user
-		}, upsert=True)
+		with dbLock:
+			db.users.update_one({'username': self.username}, {
+				'$set': self._db_user
+			}, upsert=True)
 
 	def add_stock(self, stock_name, quantity):
 		self.update()
@@ -143,7 +146,8 @@ def create_user(username):
 		"balance": get_initial_balance(),
 		"stocks": []
 	}
-	db.users.insert_one(user)
+	with dbLock:
+		db.users.insert_one(user)
 	return user
 
 def get_initial_balance():

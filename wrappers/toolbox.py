@@ -3,7 +3,7 @@ import json
 import array
 import math
 import hashlib
-from threading import Timer
+from threading import Timer, Lock
 
 '''
 	This is the generic function module.
@@ -15,6 +15,8 @@ current_utc_time = lambda: int(round(time.time()))
 
 # Returns current time in millis from epoch UTC
 current_utc_time_millis = lambda: int(round(time.time()) * 1000)
+
+dbLock = Lock()
 
 # Runs a task at a specified interval.
 #     delay = time in seconds between runs

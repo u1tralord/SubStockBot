@@ -21,10 +21,11 @@ def handle_posts_thread(post):
 		print("This could quickly fill up the db with useless garbage.")
 		print("Only happens when we use the 'send_message' function in reddit.py")
 		print("[{}] {}: {}".format("cmt", post.author, post.body))
-		db.processed_posts.insert_one({
-			'post_id': post.id,
-			'utc': current_utc_time()
-		})
+		with dbLock:
+			db.processed_posts.insert_one({
+				'post_id': post.id,
+				'utc': current_utc_time()
+			})
 		command_processor.process_post(post)
 
 # Gets all comments the user was mentioned in, and processes the comment

@@ -23,22 +23,23 @@ placeOfferLock = Lock()
 
 def _place_offer(offer_type, username, stock, quantity, unit_bid):
 	with placeOfferLock:
-        # id = base64.b64encode(uuid.uuid4().bytes)[:5]
-		id = 0
-		while db.market.find_one({'id': id}):
-			id += 1
+		with dbLock:
+			# id = base64.b64encode(uuid.uuid4().bytes)[:5]
+			id = 0
+			while db.market.find_one({'id': id}):
+				id += 1
 			
-		db.market.insert_one({
-			"offer": offer_type,
-			"id": id,
-			"username": username,
-			"stock_name": stock,
-			"quantity": quantity,  # Used to keep track of how many stocks are left to buy/sell in this offer
-			"total_quantity": quantity,  # This will not be reduced as units of stock from this offer sell.
-										 # Used for tracking percentage complete
-			"unit_bid": unit_bid,
-			"offer_created": current_utc_time_millis()
-	})
+			db.market.insert_one({
+				"offer": offer_type,
+				"id": id,
+				"username": username,
+				"stock_name": stock,
+				"quantity": quantity,  # Used to keep track of how many stocks are left to buy/sell in this offer
+				"total_quantity": quantity,  # This will not be reduced as units of stock from this offer sell.
+											 # Used for tracking percentage complete
+				"unit_bid": unit_bid,
+				"offer_created": current_utc_time_millis()
+			})
 
 def place_buy(username, stock, quantity, unit_bid):
 	print("{} is buying {} {} stocks at {} kreddit each".format(username, str(quantity), stock, str(unit_bid)))
@@ -68,7 +69,8 @@ def match_offers():
 				make_transfer(buy, sale)
 
 def delete_offer(offer):
-	db.market.delete_one({"_id": offer["_id"]})
+	with dbLock:
+		db.market.delete_one({"_id": offer["_id"]})
 
 def make_transfer(buy, sale):
 	buyer = User(buy['username'])
@@ -79,19 +81,23 @@ def make_transfer(buy, sale):
 	buy_quantity = float(buy['quantity'])
 	sale_quantity = float(sale['quantity'])
 	if buy_quantity <= sale_quantity:
-		sale['quantity'] = sale_quantity - buy_quantity
-		buy['quantity'] = 0
+		with dbLock:
+			sale['quantity'] = sale_quantity - buy_quantity
+			buy['quantity'] = 0
 		transaction_quantity = buy_quantity
-		db.market.update_one({'_id': sale['_id']}, {
-			'$set': sale
-		}, upsert=False)
+		with dbLock:
+			db.market.update_one({'_id': sale['_id']}, {
+				'$set': sale
+			}, upsert=False)
 	else:
-		buy['quantity'] = buy_quantity - sale_quantity
-		sale['quantity'] = 0
+		with dbLock:
+			buy['quantity'] = buy_quantity - sale_quantity
+			sale['quantity'] = 0
 		transaction_quantity = sale_quantity
-		db.market.update_one({'_id': buy['_id']}, {
-			'$set': buy
-		}, upsert=False)
+		with dbLock:
+			db.market.update_one({'_id': buy['_id']}, {
+				'$set': buy
+			}, upsert=False)
 
 	buyer_price = transaction_quantity * float(buy['unit_bid'])
 	transaction_price = transaction_quantity * float(sale['unit_bid'])

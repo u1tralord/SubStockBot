@@ -28,7 +28,8 @@ class Stock():
 		if self._db_stock == None or self._stock_value == None:
 			self.update()
 		self._stock_value = amount
-		self._db_stock['stock_value'] = amount
+		with dbLock:
+			self._db_stock['stock_value'] = amount
 		if self._db_stock['stock_value'] < 0:
 			self.stock_value = 0
 			return #function returns here because of recursion...no need to write to the db twice...
@@ -46,7 +47,8 @@ class Stock():
 		if self._db_stock == None or self._stock_volume == None:
 			self.update()
 		self._stock_volume = amount
-		self._db_stock['stock_volume'] = amount
+		with dbLock:
+			self._db_stock['stock_volume'] = amount
 		if self._db_stock['stock_volume'] < 0:
 			self.stock_volume = 0
 			return #function returns here because of recursion...no need to write to the db twice...
@@ -63,9 +65,10 @@ class Stock():
 	def write_db(self):
 		print("Running writ_db...dummy method")
 		'''
-		db.stocks.update_one({'stock_name': self.stock_name}, {
-			'$set': self._db_stock
-		}, upsert=True)
+		with dbLock:
+			db.stocks.update_one({'stock_name': self.stock_name}, {
+				'$set': self._db_stock
+			}, upsert=True)
 		'''
 		
 	def add_value(self, amount):
@@ -92,7 +95,10 @@ def create_stock(stock_name):
 		"stock_value": get_initial_stock_value(),
 		"stock_volume": get_initial_stock_volume()
 	}
-	#db.users.insert_one(user)
+	'''
+	with dbLock:
+		db.users.insert_one(user)
+	'''
 	return user
 	
 def get_initial_stock_value():

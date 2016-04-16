@@ -34,15 +34,16 @@ def update_stock_properties(subname):
 			"bot_owned_quantity": 10000, # Total stock available for purchase from bot
 			"stock_volume": 10000, # Total stock available on market
 		}
-		db.stocks.insert_one(db_stock)
+		with dbLock:
+			db.stocks.insert_one(db_stock)
 
 	##
 	# Do stuff here to modify stock properties
 	##
-
-	db.stocks.update_one({'stock_name': subname}, {
-        '$set': db_stock
-    }, upsert=True)
+	with dbLock:
+		db.stocks.update_one({'stock_name': subname}, {
+			'$set': db_stock
+		}, upsert=True)
     
 #Returns an integer value representing the number of subscribers to a sub.
 #	 subname = string value of subreddit to be evaluated

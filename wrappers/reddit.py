@@ -1,7 +1,7 @@
 import praw
 import json
 import OAuth2Util
-from threading import Timer
+from threading import Timer, Lock
 from wrappers.toolbox import*
 
 '''
@@ -13,13 +13,16 @@ config = None
 with open("profile.config") as f:
 	config = json.load(f)
 	f.close()
+	
+oAuthLock = Lock()
 
-r = praw.Reddit("Subreddit stock monitor. More info at /r/subredditstockmarket."
-				"Created by u/u1tralord, u/Obzoen, and u/CubeMaster7  v: 0.0")
+with oAuthLock:
+	r = praw.Reddit("Subreddit stock monitor. More info at /r/subredditstockmarket."
+					"Created by u/u1tralord, u/Obzoen, and u/CubeMaster7  v: 0.0")
 				
 #Get OAuth2 Token and login.
-o = OAuth2Util.OAuth2Util(r)
-repeat_task(3500, o.refresh, force=True)
+with oAuthLock:
+	o = OAuth2Util.OAuth2Util(r)
 
 # Footer added on to the end of all comments
 FOOTER = "\n\n\n" \
@@ -31,30 +34,42 @@ FOOTER = "\n\n\n" \
 
 logged_in_user = lambda: str(r.user)
 
+def refresh_OAuth(coerce=True):
+	with oAuthLock:
+		o.refresh(force=coerce)
+		
+repeat_task(3500, refresh_OAuth)
+
 def get_moderators(subreddit):
-	return r.get_moderators(r.get_subreddit(subreddit))
+	with oAuthLock:
+		return r.get_moderators(r.get_subreddit(subreddit))
 
 def is_mod(username, subreddit):
 	mod_status = False
 	for mod_name in get_moderators(subreddit):
+		print (str(mod_name) + " = mod_name")
 		if str(mod_name) == username:
 			mod_status = True
 	return mod_status
 
 def get_mentions():
-	return r.get_mentions(limit=None)
+	with oAuthLock:
+		return r.get_mentions(limit=None)
 	
 def get_unread():
-	return r.get_unread(limit=None, unset_has_mail=True)
+	with oAuthLock:
+		return r.get_unread(limit=None, unset_has_mail=True)
 	
 def get_messages():
-	return r.get_messages(limit=None)
+	with oAuthLock:
+		return r.get_messages(limit=None)
 
 # Method for standard commenting by the bot. We should add a footer to the bot with a link to the
 # subreddit, and the standard "I AM A BOT" message
 def reply_comment(comment, message):
 	try:
-		comment.reply(message + FOOTER)
+		with oAuthLock:
+			comment.reply(message + FOOTER)
 		print(message)
 	except praw.errors.RateLimitExceeded as error:
 		print('Rate Limit Exceded')
@@ -63,7 +78,8 @@ def reply_comment(comment, message):
 		
 def send_message(recipient, subject, message):
 	try:
-		r.send_message(recipient, subject, message + FOOTER)
+		with oAuthLock:
+			r.send_message(recipient, subject, message + FOOTER)
 		print (message)
 	except praw.errors.RateLimitExceeded as error:
 		print('Rate Limit Exceded')
@@ -72,11 +88,12 @@ def send_message(recipient, subject, message):
 	
 # Method for standard commenting by the bot.
 def reply(redditThing, message):
-    try:
-        redditThing.reply(message + FOOTER)
-        print(message)
-    except praw.errors.RateLimitExceeded as error:
-        print('Rate Limit Exceded')
-        print('Sleeping for %d seconds' % error.sleep_time)
-        Timer(error.sleep_time, reply, (redditThing, message)).start()
+	try:
+		with oAuthLock:
+			redditThing.reply(message + FOOTER)
+		print(message)
+	except praw.errors.RateLimitExceeded as error:
+		print('Rate Limit Exceded')
+		print('Sleeping for %d seconds' % error.sleep_time)
+		Timer(error.sleep_time, reply, (redditThing, message)).start()
 
