@@ -150,14 +150,34 @@ def cancel_order(args, comment):
 			except ValueError:
 				reddit.reply(comment, "Invalid command. Does this order belong to you?")
 		
-	
+def list_orders(args, comment):
+	if len(args) >= 2:
+		print("Commenting Market List")
+		username = comment.author.name
+		buys = db.market.find({'offer': 'buy', 'stock_name': args[1]}).sort("unit_bid", pymongo.ASCENDING)
+		sells = db.market.find({'offer': 'sell', 'stock_name': args[1]}).sort("unit_bid", pymongo.DESCENDING)
+		buyTable = "~+=|People Want to Buy|=+~\n\n\n"
+		buyTable += "Buyer|Asking Bid|Quantity|Order Id\n" \
+				   ":--|:--|--:|--:\n"
+		for buyoffer in buys:
+			buyTable += "{}|{}|{}/{}|{}\n".format(buyoffer['username'], buyoffer['unit_bid'], buyoffer['quantity'], buyoffer['total_quantity'], buyoffer['id'])
+		buyTable += '\n\n\n'
+		sellTable = "~+=|People Want to Sell|=+~\n\n\n"
+		sellTable += "Seller|Asking Price|Quantity|Order Id\n" \
+					":--|:--|--:|--:\n"
+		for selloffer in sells:
+			sellTable += "{}|{}|{}/{}|{}\n".format(selloffer['username'], selloffer['unit_bid'], selloffer['quantity'], selloffer['total_quantity'], selloffer['id'])
+			
+		orders_comment = "Market List:  \n\n\n" + sellTable + buyTable
+		reddit.reply(comment, orders_comment)
 commands = {
 	"buy": buy,
 	"sell": sell,
 	"info": get_stats,
 	"profile": get_profile,
 	"orders": get_orders,
-	"cancel": cancel_order
+	"cancel": cancel_order,
+	"market": list_orders
 }
 
 # Returns if the arguments are able to be processed as a command
