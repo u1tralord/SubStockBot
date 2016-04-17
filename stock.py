@@ -21,37 +21,31 @@ class Stock():
 	def stock_value(self):
 		if self._stock_value == None:
 			self.update()
-			self._stock_value = self._db_stock['stock_value']
-		return self._stock_value
+		return self._db_stock['stock_value']
 		
 	@stock_value.setter
 	def stock_value(self, amount):
-		if self._db_stock == None or self._stock_value == None:
+		if self._db_stock == None:
 			self.update()
-		self._stock_value = amount
-		with dbLock:
-			self._db_stock['stock_value'] = amount
+		self._db_stock['stock_value'] = amount
 		if self._db_stock['stock_value'] < 0:
-			self.stock_value = 0
+			self._db_stock['stock_value'] = 0
 			return #function returns here because of recursion...no need to write to the db twice...
 		self.write_db()
 		
 	@property
 	def stock_volume(self):
-		self.update()
-		if self._stock_volume == None:
-			self._stock_volume = self._db_stock['stock_volume']
-		return self._stock_volume
+		if self._db_stock == None:
+			self.update()
+		return self._db_stock['stock_volume']
 		
 	@stock_volume.setter
 	def stock_volume(self, amount):
-		if self._db_stock == None or self._stock_volume == None:
+		if self._db_stock == None:
 			self.update()
-		self._stock_volume = amount
-		with dbLock:
-			self._db_stock['stock_volume'] = amount
+		self._db_stock['stock_volume'] = amount
 		if self._db_stock['stock_volume'] < 0:
-			self.stock_volume = 0
+			self._db_stock['stock_volume'] = 0
 			return #function returns here because of recursion...no need to write to the db twice...
 		self.write_db()
 		

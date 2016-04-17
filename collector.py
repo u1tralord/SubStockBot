@@ -14,7 +14,7 @@ db = db_wrapper.get_instance()
 #     after (optional) = Integer value for earliest UTC in seconds to retrieve. 
 #                        No posts before this limit will be retieved
 def get_json(path, after=None):
-    url = 'http://www.reddit.com/{}.json?limit=1000'.format(path)
+    url = 'http://www.reddit.com/{}.json?limit=1000'.format(path) #get_json("/r/{}".format(subname)
     if (after):
         url += '&after=' + after
     r = requests.get(url, headers={'user-agent': 'sub_stock_bot/0.0.1'})
@@ -109,20 +109,27 @@ def get_upvote_total(rawPostsJson):
 	
 if __name__ == '__main__':
 	#talesfromtechsupport, funny, adviceanimals, askreddit, leagueoflegends, me_irl, crazyideas, accidentalcomedy
-	subsTable = ['talesfromtechsupport', 'funny', 'adviceanimals', 'askreddit', 'leagueoflegends', 'me_irl', 'crazyideas', 'accidentalcomedy']
-	outfile = open('datafile.txt', 'w')
+	start_time = toolbox.current_utc_time()
+	subsTable = ['talesfromtechsupport', 'funny', 'adviceanimals', 'askreddit', 
+				'leagueoflegends', 'me_irl', 'crazyideas', 'accidentalcomedy']
+	outfile = open('collector_dump.txt', 'w')
 	for subname in subsTable:
+		get_sub_start_time = toolbox.current_utc_time()
 		rawAboutJson = get_json("/r/{}/about".format(subname))
 		rawCommentsJson = get_json("/r/{}/comments".format(subname))
 		rawPostsJson = get_json("/r/{}".format(subname))
 		
+		print ('writing {}\'s data to file'.format(subname))
 		outfile.write( "-----\n" )
 		outfile.write( 'Subname: {}\n'.format(subname) )
 		#comment frequency, upvote sum, upvote average, and subscribers
-		outfile.write( 'Comment Frequency: {}\n'.format(get_comment_freq(rawCommentsJson)) )
+		outfile.write( 'Comment Frequency: {} miliseconds between comments on average.\n'.format(get_comment_freq(rawCommentsJson)) )
+		outfile.write( 'Post Frequency: {} miliseconds between posts on average.\n'.format(get_post_freq(rawPostsJson)) )
 		outfile.write( 'Upvote Total: {}\n'.format(get_upvote_total(rawPostsJson)) )
 		outfile.write( 'Upvote Average: {}\n'.format(get_avg_post_score(rawPostsJson)) )
 		outfile.write( 'Subscribers: {}\n'.format(get_subscribers(rawAboutJson)) )
+		outfile.write( 'Time to Analyze: {} seconds\n'.format(toolbox.current_utc_time() - get_sub_start_time))
 		outfile.write( "-----\n" )
+	outfile.write("All subs were analyzed in {} seconds.".format(toolbox.current_utc_time() - start_time))
 	outfile.close()
 		

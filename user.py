@@ -27,27 +27,36 @@ with open("settings.config") as f:
 class User:
 	def __init__(self, username):
 		self._username = username
-		self._balance = None
-		self._stocks = None
 		self._db_user = None
 		self.update()
 	
 	@property
 	def username(self):
 		return self._username
+		
+	@property
+	def last_active(self):
+		if self._db_user == None:
+			self.update()
+		return self._db_user['last_active']
+		
+	@last_active.setter
+	def last_active(self, amount):
+		if self._db_user == None:
+			self.update()
+		self._db_user['last_active'] = amount
+		self.write_db()
 	
 	@property
 	def balance(self):
-		if self._balance == None:
+		if self._db_user == None:
 			self.update()
-			self._balance = self._db_user['balance']
-		return self._balance
+		return self._db_user['balance']
 		
 	@balance.setter
 	def balance(self, amount):
-		if self._db_user == None or self.balance == None:
+		if self._db_user == None:
 			self.update()
-		self._balance = amount
 		self._db_user['balance'] = amount
 		if self._db_user['balance'] < 0:
 			self.balance = 0
@@ -56,16 +65,14 @@ class User:
 	
 	@property
 	def stocks(self):
-		if self._stocks == None:
+		if self._db_user == None:
 			self.update()
-			self._stocks = self._db_user['stocks']
-		return self._stocks
+		return self._db_user['stocks']
 		
 	@stocks.setter
 	def stocks(self, list):
-		if self._db_user == None or self._stocks == None:
+		if self._db_user == None:
 			self.update()
-		self._stocks = list
 		self._db_user['stocks'] = list
 		self.write_db()
 		
@@ -143,6 +150,7 @@ def create_user(username):
 	user = {
 		"permission_level": get_permission_level(username),
 		"username": username,
+		"last_active": current_utc_time(),
 		"balance": get_initial_balance(),
 		"stocks": []
 	}

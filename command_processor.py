@@ -1,4 +1,5 @@
 from wrappers import reddit
+from wrappers import toolbox
 import market
 from stock import *
 from user import *
@@ -14,21 +15,29 @@ db = db_wrapper.get_instance()
 
 # Processes the comment and figures out what command to run
 def process_post(post):
+	user = User(post.author.name)
+	print (str(user.username) + " issued a command. They were last active on " + str(user.last_active))
 	command_args = str(post.body).split(" ")
 	if '/u/' in command_args[0]:
 		command_args.pop(0)
 		
 	print ("Body - " +str(post.body))
-	print ("Args - " +str(command_args))
+	#print ("Args - " +str(command_args))
 		
-	if is_command(command_args):
-		print(post)
-		# Run the command that matches the first argument in the comment. Ex: Buy, sell, etc
-		commands[command_args[0].lower()](command_args, post)
+	if post.author.link_karma + post.author.comment_karma >= 1000 or post.author.created_utc >= toolbox.current_utc_time() - 31536000: # 31536000 is the number of seconds in a year.
+		if is_command(command_args):
+			print(post)
+			# Run the command that matches the first argument in the comment. Ex: Buy, sell, etc
+			commands[command_args[0].lower()](command_args, post)
+			user.last_active = toolbox.current_utc_time()
+			print("set last_active to {}".format(user.last_active))
+		else:
+			print('Command not recognized ' + command_args[0].lower())
+			print(str(commands))
+			reddit.reply(post, "Command not recognized")
 	else:
-		print('Command not recognized ' + command_args[0].lower())
-		print(str(commands))
-		reddit.reply(post, "Command not recognized")
+		print('Account needs more karma.')
+		reddit.reply(post, "Insufficiant Karma.")
 
 # Comment format: /u/substockbot sell 5 askreddit 50 kreddit
 def buy(args, comment):
@@ -173,7 +182,7 @@ def list_all_orders(args, comment):
 		for buyoffer in buys:
 			buyTable += "{}|{}|{}/{}|{}\n".format(buyoffer['username'], buyoffer['unit_bid'], buyoffer['quantity'], buyoffer['total_quantity'], buyoffer['id'])
 			
-		orders_comment = "Market List:  \n\n\n" + sellTable + buyTable
+		orders_comment = "Market List: {}  \n\n\n".format(args[1]) + sellTable + buyTable
 		reddit.reply(comment, orders_comment)
 
 commands = {
