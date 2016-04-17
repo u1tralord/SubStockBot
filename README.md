@@ -8,4 +8,3 @@ TODO:
 * Bot function: evaluate stock value
 * fix info command.
 * fix stock class to pull it's data from the db instead of always using initial data.
-* don't allow users to interact with the bot unless they have "x" karma
