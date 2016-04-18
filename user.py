@@ -3,6 +3,7 @@ from wrappers import db as db_wrapper
 from wrappers import reddit
 from wrappers.toolbox import *
 from wrappers import pymo
+from threading import Lock
 
 db = db_wrapper.get_instance()
 
@@ -23,12 +24,16 @@ whitelist_cache = {
 settings = None
 with open("settings.config") as f:
 	settings = json.load(f)
+	
+userLocks = {}
 
 class User:
 	def __init__(self, username):
 		self._username = username
 		self._db_user = None
 		self.update()
+		if username not in userLocks:
+			userLocks.update({username: Lock()})
 	
 	@property
 	def username(self):
@@ -36,45 +41,50 @@ class User:
 		
 	@property
 	def last_active(self):
-		if self._db_user == None:
-			self.update()
-		return self._db_user['last_active']
+		with userLocks[self.username]:
+			if self._db_user == None:
+				self.update()
+			return self._db_user['last_active']
 		
 	@last_active.setter
 	def last_active(self, amount):
-		if self._db_user == None:
-			self.update()
-		self._db_user['last_active'] = amount
-		self.write_db()
+		with userLocks[self.username]:
+			if self._db_user == None:
+				self.update()
+			self._db_user['last_active'] = amount
+			self.write_db()
 	
 	@property
 	def balance(self):
-		if self._db_user == None:
-			self.update()
-		return self._db_user['balance']
+		with userLocks[self.username]:
+			if self._db_user == None:
+				self.update()
+			return self._db_user['balance']
 		
 	@balance.setter
 	def balance(self, amount):
-		if self._db_user == None:
-			self.update()
-		self._db_user['balance'] = amount
-		if self._db_user['balance'] < 0:
-			self.balance = 0
-			return #returns here because of recursion so we aren't writing to the db twice.
-		self.write_db()
+		with userLocks[self.username]:
+			if self._db_user == None:
+				self.update()
+			self._db_user['balance'] = amount
+			if self._db_user['balance'] < 0:
+				self._db_user['balance'] = 0
+			self.write_db()
 	
 	@property
 	def stocks(self):
-		if self._db_user == None:
-			self.update()
-		return self._db_user['stocks']
+		with userLocks[self.username]:
+			if self._db_user == None:
+				self.update()
+			return self._db_user['stocks']
 		
 	@stocks.setter
 	def stocks(self, list):
-		if self._db_user == None:
-			self.update()
-		self._db_user['stocks'] = list
-		self.write_db()
+		with userLocks[self.username]:
+			if self._db_user == None:
+				self.update()
+			self._db_user['stocks'] = list
+			self.write_db()
 		
 
 	def update(self):
@@ -117,11 +127,11 @@ class User:
 		if is_whitelisted(stock_name):
 			has_enough_stock = False
 			for stock_entry in self.stocks:
-				if stock_entry['stock_name'] == stock_name and int(stock_entry['quantity_owned']) >= quantity:
-					stock_entry['quantity_owned'] = int(stock_entry['quantity_owned']) - quantity
+				if stock_entry['stock_name'] == stock_name and stock_entry['quantity_owned'] >= quantity:
+					stock_entry['quantity_owned'] = stock_entry['quantity_owned'] - quantity
 					has_enough_stock = True
 					#Doesn't work...
-					if int(stock_entry['quantity_owned']) == 0:
+					if stock_entry['quantity_owned'] == 0:
 						stock = pymo.find_one(db.users, {'username': self.username})['stocks']
 						with pymo.pymongoLock:
 							stock.pop(self.stocks.index(stock_entry))

@@ -1,10 +1,14 @@
 from wrappers import db as db_wrapper
 from wrappers import pymo
 from wrappers import toolbox
+from threading import Lock
 import collector
+
+
+
 db = db_wrapper.get_instance()
 
-
+stockLocks = {}
 
 class Stock():
 	def __init__(self, stock_name):
@@ -12,112 +16,123 @@ class Stock():
 		self._db_stock = None
 		self.update()
 		
+		if stock_name not in stockLocks:
+			stockLocks.update({stock_name: Lock()})
+		
 	@property
 	def stock_name(self):
 		return self._stock_name
 		
 	@property
 	def stock_value(self):
-		if self._db_stock == None:
-			self.update()
-		return self._db_stock['stock_value']
+		with stockLocks[self.stock_name]:
+			if self._db_stock == None:
+				self.update()
+			return self._db_stock['stock_value']
 		
 	@stock_value.setter
 	def stock_value(self, amount):
-		if self._db_stock == None:
-			self.update()
-		self._db_stock['last_stock_value_update'] = toolbox.current_utc_time()
-		self._db_stock['stock_value'] = amount
-		if self._db_stock['stock_value'] < 0:
-			self._db_stock['stock_value'] = 0
-			return #function returns here because of recursion...no need to write to the db twice...
-		self.write_db()
+		with stockLocks[self.stock_name]:
+			if self._db_stock == None:
+				self.update()
+			self._db_stock['last_stock_value_update'] = toolbox.current_utc_time()
+			self._db_stock['stock_value'] = amount
+			if self._db_stock['stock_value'] < 0:
+				self._db_stock['stock_value'] = 0
+			self.write_db()
 		
 	@property
 	def last_stock_value_update(self):
-		if self._db_stock == None:
-			self.update()
-		return self._db_stock['last_stock_value_update']
+		with stockLocks[self.stock_name]:
+			if self._db_stock == None:
+				self.update()
+			return self._db_stock['last_stock_value_update']
 		
 	@property
 	def stock_index(self):
-		if self._db_stock == None:
-			self.update()
-		return self._db_stock['stock_index']
+		with stockLocks[self.stock_name]:
+			if self._db_stock == None:
+				self.update()
+			return self._db_stock['stock_index']
 		
 	@stock_index.setter
 	def stock_index(self, amount):
-		if self._db_stock == None:
-			self.update()
-		self._db_stock['stock_index'] = amount
-		if self._db_stock['stock_index'] < 0:
-			self._db_stock['stock_index'] = 0
-			return #function returns here because of recursion...no need to write to the db twice...
-		self.write_db()
+		with stockLocks[self.stock_name]:
+			if self._db_stock == None:
+				self.update()
+			self._db_stock['stock_index'] = amount
+			if self._db_stock['stock_index'] < 0:
+				self._db_stock['stock_index'] = 0
+			self.write_db()
 		
 	@property
 	def stock_volume(self):
-		if self._db_stock == None:
-			self.update()
-		return self._db_stock['stock_volume']
+		with stockLocks[self.stock_name]:
+			if self._db_stock == None:
+				self.update()
+			return self._db_stock['stock_volume']
 		
 	@stock_volume.setter
 	def stock_volume(self, amount):
-		if amount == 0:
-			self.reset_volume()
-			return
-		if self._db_stock == None:
-			self.update()
-		self._db_stock['stock_volume'] = amount
-		if self._db_stock['stock_volume'] < 0:
-			self._db_stock['stock_volume'] = 0
-			return #function returns here because of recursion...no need to write to the db twice...
-		self.write_db()
+		with stockLocks[self.stock_name]:
+			if amount == 0:
+				self.reset_volume()
+				return
+			if self._db_stock == None:
+				self.update()
+			self._db_stock['stock_volume'] = amount
+			if self._db_stock['stock_volume'] < 0:
+				self._db_stock['stock_volume'] = 0
+			self.write_db()
 		
 	@property
 	def last_volume_reset(self):
-		if self._db_stock == None:
-			self.update()
-		return self._db_stock['last_volume_reset']
+		with stockLocks[self.stock_name]:
+			if self._db_stock == None:
+				self.update()
+			return self._db_stock['last_volume_reset']
 		
 	@property
 	def treasury_shares(self):
-		if self._db_stock == None:
-			self.update()
-		return self._db_stock['treasury_shares']
+		with stockLocks[self.stock_name]:
+			if self._db_stock == None:
+				self.update()
+			return self._db_stock['treasury_shares']
 		
 	@treasury_shares.setter
 	def treasury_shares(self, amount):
-		if self._db_stock == None:
-			self.update()
-		self._db_stock['treasury_shares'] = amount
-		if self._db_stock['treasury_shares'] < 0:
-			self._db_stock['treasury_shares'] = 0
-			return #function returns here because of recursion...no need to write to the db twice...
-		self.write_db()
+		with stockLocks[self.stock_name]:
+			if self._db_stock == None:
+				self.update()
+			self._db_stock['treasury_shares'] = amount
+			if self._db_stock['treasury_shares'] < 0:
+				self._db_stock['treasury_shares'] = 0
+			self.write_db()
 		
 	@property
 	def issued_shares(self):
-		if self._db_stock == None:
-			self.update()
-		return self._db_stock['issued_shares']
+		with stockLocks[self.stock_name]:
+			if self._db_stock == None:
+				self.update()
+			return self._db_stock['issued_shares']
 		
 	@issued_shares.setter
 	def issued_shares(self, amount):
-		if self._db_stock == None:
-			self.update()
-		self._db_stock['last_issued_shares_update'] = toolbox.current_utc_time
-		self._db_stock['issued_shares'] = amount
-		if self._db_stock['issued_shares'] < 0:
-			self._db_stock['issued_shares'] = 0
-			return #function returns here because of recursion...no need to write to the db twice...
-		self.write_db()
-		
+		with stockLocks[self.stock_name]:
+			if self._db_stock == None:
+				self.update()
+			self._db_stock['last_issued_shares_update'] = toolbox.current_utc_time
+			self._db_stock['issued_shares'] = amount
+			if self._db_stock['issued_shares'] < 0:
+				self._db_stock['issued_shares'] = 0
+			self.write_db()
+			
 	@property
 	def last_issued_shares_update(self):
-		if self._db_stock == None:
-			self.update()
-		return self._db_stock['last_issued_shares_update']
+		with stockLocks[self.stock_name]:
+			if self._db_stock == None:
+				self.update()
+			return self._db_stock['last_issued_shares_update']
 		
 	def update(self):
 		print("FIXME!!! I run twice whenever I should only run once when getting a stocks value!")

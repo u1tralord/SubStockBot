@@ -87,12 +87,6 @@ def sell(args, comment, user):
 					args[3]
 				))
 			except ValueError as ve:
-				reddit.reply(comment, "You just placed an offer to sell {} of {} stock for {} kreddit each".format(
-					args[1],
-					args[2],
-					args[3]
-				))
-			except ValueError as ve:
 				reddit.reply(comment, str(ve))
 
 def get_stats(args, comment, user):

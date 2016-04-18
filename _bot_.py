@@ -33,7 +33,7 @@ def handle_posts_thread(post):
 			'utc': current_utc_time()
 		})
 		command_processor.process_post(post)
-
+		
 # Gets all comments the user was mentioned in, and processes the comment
 def respond_to_mentions():
 	print("Retrieving Mentions...")
