@@ -9,8 +9,6 @@ class Stock():
 	def __init__(self, stock_name):
 		self._stock_name = stock_name
 		self._db_stock = None
-		self._stock_value = None
-		self._stock_volume = None
 		self.update()
 		
 	@property
@@ -19,7 +17,7 @@ class Stock():
 		
 	@property
 	def stock_value(self):
-		if self._stock_value == None:
+		if self._db_stock == None:
 			self.update()
 		return self._db_stock['stock_value']
 		
