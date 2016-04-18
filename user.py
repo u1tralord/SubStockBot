@@ -85,6 +85,7 @@ class User:
 		self._db_user = db_user
 
 	def write_db(self):
+		print ('writing to db')
 		pymo.update_one(db.users, 
 			{'username': self.username}, 
 			{ '$set': self._db_user }, 
@@ -93,7 +94,7 @@ class User:
 
 	def add_stock(self, stock_name, quantity):
 		self.update()
-		print("Adding '{}' stock to user: {} ".format(stock_name, self.username))
+		print("Adding {} '{}' stock to user: {} ".format(quantity, stock_name, self.username))
 		if is_whitelisted(stock_name):
 			stock_found = False
 			for stock_entry in self.stocks:
@@ -111,26 +112,21 @@ class User:
 		self.write_db()
 
 	def take_stock(self, stock_name, quantity):
-		print()
-		print ("-------------------------------")
-		print ("-~+=!|BIG ANNOYING WARNING/REMINDER PRINT!!!|!=+~-")
-		print ("FIX ME!!!! >>> I DO NOT DELETE THE DB ENTRY WHEN A STOCK'S QUANTITY == 0!!! >>> I am the take_stock() method in the User class in user.py >>>")
-		print ("This could lead to having an unneccessarily large db and will make finding stuff in it slower.")
-		print ("-------------------------------")
-		print()
 		self.update()
-		print("Taking '{}' stock from user: {} ", stock_name, self.username)
+		print("Taking {} '{}' stock from user: {} ".format(quantity, stock_name, self.username))
 		if is_whitelisted(stock_name):
 			has_enough_stock = False
 			for stock_entry in self.stocks:
 				if stock_entry['stock_name'] == stock_name and int(stock_entry['quantity_owned']) >= quantity:
 					stock_entry['quantity_owned'] = int(stock_entry['quantity_owned']) - quantity
 					has_enough_stock = True
-					'''
 					#Doesn't work...
-					if int(stock_entry['quantity_owned']) == quantity:
-						self.stocks.pop(stock_entry)
-					'''
+					if int(stock_entry['quantity_owned']) == 0:
+						stock = pymo.find_one(db.users, {'username': self.username})['stocks']
+						with pymo.pymongoLock:
+							stock.pop(self.stocks.index(stock_entry))
+							self.stocks.pop(self.stocks.index(stock_entry))
+						
 			if not has_enough_stock:
 				raise ValueError('Insufficient quantity of stock')
 		else:
@@ -138,9 +134,11 @@ class User:
 		self.write_db()
 
 	def add_kreddit(self, amount):
+		print("Adding {} Kreddits to user: {} ".format(amount, self.username))
 		self.balance += amount
 
 	def take_kreddit(self, amount):
+		print("Removing {} Kreddits from user: {} ".format(amount, self.username))
 		if self.balance >= amount:
 			self.balance -= amount
 		else:

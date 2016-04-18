@@ -28,7 +28,7 @@ def process_post(post):
 		if is_command(command_args):
 			print(post)
 			# Run the command that matches the first argument in the comment. Ex: Buy, sell, etc
-			commands[command_args[0].lower()](command_args, post)
+			commands[command_args[0].lower()](command_args, post, user)
 			user.last_active = toolbox.current_utc_time()
 			print("set last_active to {}".format(user.last_active))
 		else:
@@ -40,7 +40,7 @@ def process_post(post):
 		reddit.reply(post, "Insufficiant Karma.")
 
 # Comment format: /u/substockbot sell 5 askreddit 50 kreddit
-def buy(args, comment):
+def buy(args, comment, user):
 	if len(args) >= 4:
 		print("BUYING : " + str(args))
 		username = comment.author.name
@@ -55,8 +55,8 @@ def buy(args, comment):
 
 		if unit_bid is not None and quantity is not None:
 			try:
-				market.place_buy(username, args[2], quantity, unit_bid)
-				reddit.reply(comment, "You just placed an offer to buy for {} of {} stock for {} kreddit each".format(
+				market.place_buy(username, args[2], quantity, unit_bid, user)
+				reddit.reply(comment, "You just placed an offer to buy {} of {} stock for {} kreddit each".format(
 					args[1],
 					args[2],
 					args[3]
@@ -65,7 +65,7 @@ def buy(args, comment):
 				reddit.reply(comment, str(ve))
 
 # Comment format: /u/substockbot sell 5 askreddit 50 kreddit
-def sell(args, comment):
+def sell(args, comment, user):
 	if len(args) >= 4:
 		print("SELLING : " + str(args))
 		username = comment.author.name
@@ -80,14 +80,14 @@ def sell(args, comment):
 
 		if unit_bid is not None and quantity is not None:
 			try:
-				market.place_sell(username, args[2], quantity, unit_bid)
-				reddit.reply(comment, "You just placed an offer to sell for {} of {} stock for {} kreddit each".format(
+				market.place_sell(username, args[2], quantity, unit_bid, user)
+				reddit.reply(comment, "You just placed an offer to sell {} of {} stock for {} kreddit each".format(
 					args[1],
 					args[2],
 					args[3]
 				))
 			except ValueError as ve:
-				reddit.reply(comment, "You just placed an offer to sell for {} of {} stock for {} kreddit each".format(
+				reddit.reply(comment, "You just placed an offer to sell {} of {} stock for {} kreddit each".format(
 					args[1],
 					args[2],
 					args[3]
@@ -103,7 +103,6 @@ def get_stats(args, comment):
 def get_profile(args, comment):
 	print("Commenting Profile")
 	username = comment.author.name
-	user = User(username)
 	stocks = user.stocks
 	balance = user.balance
 	table = "Stock Name|Stock Quantity|Stock Value\n" \
@@ -139,7 +138,6 @@ def cancel_order(args, comment):
 	if len(args) >= 2:
 		print ("Canceling: " + str(args))
 		username = comment.author.name
-		user = User(username)
 
 		orderId = None
 		try:

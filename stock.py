@@ -1,6 +1,6 @@
 from wrappers import db as db_wrapper
 from wrappers import pymo
-import collector.py
+import collector
 db = db_wrapper.get_instance()
 
 

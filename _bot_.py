@@ -1,10 +1,19 @@
-import market
+print("Starting...")
+from wrappers.toolbox import*
+print("Imported Toolbox...")
+startUTC = current_utc_time()
+from wrappers import reddit
+print("{} seconds to connect to reddit.".format(current_utc_time() - startUTC))
+nextUTC = current_utc_time()
 import command_processor
+print("{} seconds to import command_processor.".format(current_utc_time() - nextUTC))
+nextUTC = current_utc_time()
+from wrappers import db as db_wrapper
+import market
 import threading
 from wrappers import pymo
-from wrappers import db as db_wrapper
-from wrappers import reddit
-from wrappers.toolbox import*
+print("{} seconds to import the rest of the libraries.".format(current_utc_time() - nextUTC))
+
 
 # Connect to the database
 db = db_wrapper.get_instance()
@@ -36,4 +45,5 @@ def respond_to_mentions():
 	market.match_offers()
 
 # Reads all comments the bot was mentioned in and parses for a command
+print("I took {} seconds to start up in total.".format(current_utc_time() - startUTC))
 repeat_task(30, respond_to_mentions)

@@ -40,7 +40,7 @@ def _place_offer(offer_type, username, stock, quantity, unit_bid):
 			"offer_created": current_utc_time_millis()
 		})
 
-def place_buy(username, stock, quantity, unit_bid):
+def place_buy(username, stock, quantity, unit_bid, user):
 	print("{} is buying {} {} stocks at {} kreddit each".format(username, str(quantity), stock, str(unit_bid)))
 	user = User(username)
 	try:
@@ -49,9 +49,8 @@ def place_buy(username, stock, quantity, unit_bid):
 	except ValueError as ve:
 		raise ve
 
-def place_sell(username, stock, quantity, unit_bid):
+def place_sell(username, stock, quantity, unit_bid, user):
 	print("{} is selling {} {} stocks at {} kreddit each".format(username, str(quantity), stock, str(unit_bid)))
-	user = User(username)
 	try:
 		user.take_stock(stock, quantity)
 		_place_offer("sell", username, stock, quantity, unit_bid)
