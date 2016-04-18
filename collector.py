@@ -21,6 +21,11 @@ def get_json(path, after=None):
     data = r.json()
     return data
 
+
+# I don't think we need these anymore...
+#    I am fairly certain stock.py replaces them.
+#    Leaving them in just in case...
+'''
 def update_stocks():
 	whitelist = pymo.find(db.whitelist, {}) #db.whitelist.find()
 	for subreddit in whitelist:
@@ -31,11 +36,13 @@ def update_stock_properties(subname):
 	if(db_stock is None):
 		db_stock = {
 			"stock_name": subname,
-			"bot_value": get_stock_value(subname), # Collector.py should calculate this after collecting necessary data
+			"stock_value": get_stock_value(subname), # Collector.py should calculate this after collecting necessary data
 			"stock_index": 1, # Stock's rank vs other stocks
-			"bot_owned_quantity": 10000, # Total stock available for purchase from bot
-			"stock_volume": 10000, # Total stock available on market
-			"issued_shares": get_issued_shares(subname)
+			"treasury_shares": 10000, # Total stock available for purchase from bot
+			"stock_volume": 0, # Number of stocks traded in one day
+			"last_volume_update": toolbox.current_utc_time(),
+			"issued_shares": get_issued_shares(subname), #Total number of stocks available on the market.
+			"last_issued_shares_update": toolbox.current_utc_time()
 		}
 		db.stocks.insert_one(db_stock)
 
@@ -43,28 +50,21 @@ def update_stock_properties(subname):
 	# Do stuff here to modify stock properties
 	##
 	pymo.update_one(db.stocks, {'stock_name': subname}, {'$set': db_stock}, upsert=True) #db.stocks.update_one({'stock_name': subname}, {'$set': db_stock}, upsert=True)
-    
+'''
+
 #Returns an integer value representing the number of subscribers to a sub.
 #	 subname = string value of subreddit to be evaluated
 def get_subscribers(rawAboutJson):
 	return rawAboutJson['data']['subscribers']
-
-# Returns an integer value representing the calculated stock value
-#     subname = string value of subreddit to be evaluated
-def get_stock_value(subname):
-	rawAboutJson = get_json("/r/{}/about".format(subname))
-	rawCommentsJson = get_json("/r/{}/comments".format(subname))
-	rawPostsJson = get_json("/r/{}".format(subname))
-	rawNewPostsJson = get_json("/r/{}/new".format(subname))
-
-	comment_freq = get_comment_freq(rawCommentsJson)
-	post_freq = get_post_freq(rawNewPostsJson)
-	upvote_sum = get_upvote_total(rawPostsJson)
-	upvote_avg = get_avg_post_score(rawPostsJson)
-	subscribers = get_subscribers(rawAboutJson)
 	
-	# print("{} {} {}".format(comment_freq, upvote_sum, upvote_avg))
-	return -1 # Temporary return value
+def get_active_trader_count():
+	users = pymo.find(db.users, {})
+	active_users = 0
+	currentUTC = toolbox.current_utc_time()
+	for user in users:
+		if user['last_active'] >= currentUTC - toolbox.time_table['one_week']*2:
+			active_users += 1
+	return active_users
 
 # Returns an integer for the average time between posts.
 # Calculating the average difference between the UTC variable on comment json object
@@ -109,7 +109,6 @@ def get_upvote_total(rawPostsJson):
 	return upvoteTotal
 	
 if __name__ == '__main__':
-	#talesfromtechsupport, funny, adviceanimals, askreddit, leagueoflegends, me_irl, crazyideas, accidentalcomedy
 	start_time = toolbox.current_utc_time()
 	subsTable = ['talesfromtechsupport', 'funny', 'adviceanimals', 'askreddit', 
 				'leagueoflegends', 'me_irl', 'crazyideas', 'accidentalcomedy']
@@ -133,4 +132,4 @@ if __name__ == '__main__':
 		outfile.write( "-----\n" )
 	outfile.write("All subs were analyzed in {} seconds.".format(toolbox.current_utc_time() - start_time))
 	outfile.close()
-		
+	

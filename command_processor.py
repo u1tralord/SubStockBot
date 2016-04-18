@@ -24,7 +24,7 @@ def process_post(post):
 	print ("Body - " +str(post.body))
 	#print ("Args - " +str(command_args))
 		
-	if post.author.link_karma + post.author.comment_karma >= 1000 or post.author.created_utc >= toolbox.current_utc_time() - 31536000: # 31536000 is the number of seconds in a year.
+	if post.author.link_karma + post.author.comment_karma >= 1000 or post.author.created_utc >= toolbox.current_utc_time() - toolbox.time_table['one_year']:
 		if is_command(command_args):
 			print(post)
 			# Run the command that matches the first argument in the comment. Ex: Buy, sell, etc
@@ -95,12 +95,12 @@ def sell(args, comment, user):
 			except ValueError as ve:
 				reddit.reply(comment, str(ve))
 
-def get_stats(args, comment):
+def get_stats(args, comment, user):
 	print("STATs: " + str(args))
 	if len(args) >= 2:
 		reddit.reply(comment, "You just tried to get the latest statistics for  {} stocks".format(args[1]))
 
-def get_profile(args, comment):
+def get_profile(args, comment, user):
 	print("Commenting Profile")
 	username = comment.author.name
 	stocks = user.stocks
@@ -114,7 +114,7 @@ def get_profile(args, comment):
 	profile_comment = "{}\'s Profile:  \nBalance: {}  \n\n\n".format(username, balance) + table
 	reddit.reply(comment, profile_comment)
 
-def get_orders(args, comment):
+def get_orders(args, comment, user):
 	print("Commenting Orders")
 	username = comment.author.name
 	buys = pymo.find(db.market, {'offer': 'buy', 'username': username}).sort("offer_created", 1) #db.market.find({'offer': 'buy', 'username': username}).sort("offer_created", 1)
@@ -134,7 +134,7 @@ def get_orders(args, comment):
 	orders_comment = "{}\'s Orders:  \n\n\n".format(username) + buyTable + sellTable
 	reddit.reply(comment, orders_comment)
 	
-def cancel_order(args, comment):
+def cancel_order(args, comment, user):
 	if len(args) >= 2:
 		print ("Canceling: " + str(args))
 		username = comment.author.name
@@ -160,7 +160,7 @@ def cancel_order(args, comment):
 			except ValueError:
 				reddit.reply(comment, "Invalid command. Does this order belong to you?")
 		
-def list_all_orders(args, comment):
+def list_all_orders(args, comment, user):
 	if len(args) >= 2:
 		print("Commenting Market List")
 		username = comment.author.name

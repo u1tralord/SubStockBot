@@ -16,6 +16,12 @@ current_utc_time = lambda: int(round(time.time()))
 # Returns current time in millis from epoch UTC
 current_utc_time_millis = lambda: int(round(time.time()) * 1000)
 
+# Stores the length of fixed periods of time in seconds.
+time_table = {
+	'one_year': 31536000,
+	'one_week': 604800
+}
+
 # Runs a task at a specified interval.
 #     delay = time in seconds between runs
 #     action = function name to be repeated
