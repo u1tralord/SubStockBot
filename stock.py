@@ -14,10 +14,11 @@ class Stock():
 	def __init__(self, stock_name):
 		self._stock_name = stock_name
 		self._db_stock = None
-		self.update()
 		
 		if stock_name not in stockLocks:
 			stockLocks.update({stock_name: Lock()})
+		
+		self.update()
 		
 	@property
 	def stock_name(self):
@@ -75,14 +76,12 @@ class Stock():
 	@stock_volume.setter
 	def stock_volume(self, amount):
 		with stockLocks[self.stock_name]:
-			if amount == 0:
-				self.reset_volume()
-				return
 			if self._db_stock == None:
 				self.update()
 			self._db_stock['stock_volume'] = amount
-			if self._db_stock['stock_volume'] < 0:
+			if self._db_stock['stock_volume'] <= 0:
 				self._db_stock['stock_volume'] = 0
+				self._db_stock['last_volume_reset'] = toolbox.current_utc_time()
 			self.write_db()
 		
 	@property
@@ -121,7 +120,7 @@ class Stock():
 		with stockLocks[self.stock_name]:
 			if self._db_stock == None:
 				self.update()
-			self._db_stock['last_issued_shares_update'] = toolbox.current_utc_time
+			self._db_stock['last_issued_shares_update'] = toolbox.current_utc_time()
 			self._db_stock['issued_shares'] = amount
 			if self._db_stock['issued_shares'] < 0:
 				self._db_stock['issued_shares'] = 0
@@ -137,11 +136,10 @@ class Stock():
 	def update(self):
 		print("FIXME!!! I run twice whenever I should only run once when getting a stocks value!")
 		print("Running stock.update()...dummy method")
-		#db_stock = pymo.find_one(db.stocks, {'stock_name': self.stock_name})
-		db_stock = None #TEMPORARY!!!
-		if db_stock is None:
-			db_stock = self._init_stock()
-		self._db_stock = db_stock
+		#self._db_stock = pymo.find_one(db.stocks, {'stock_name': self.stock_name})
+		self._db_stock = None #TEMPORARY!!!
+		if self._db_stock is None:
+			self._init_stock()
 		
 	def write_db(self):
 		print("Running write_db...dummy method")
@@ -175,10 +173,10 @@ class Stock():
 			self.treasury_shares = 0
 			
 	def reset_volume(self):
-		if _db_stock == None:
+		if self._db_stock == None:
 			self.update()
-		self._db_stock['last_volume_reset'] = 0
-		write_db()
+		self.stock_volume = 0
+		self.write_db()
 
 	def update_issued_shares(self):
 		rawAboutJson = collector.get_json("/r/{}/about".format(self.stock_name))
@@ -203,32 +201,25 @@ class Stock():
 		self.stock_value = 10/(comment_freq**0.2)+1000/(post_freq**0.5)+upvote_sum/20000+upvote_avg**0.2+subscribers**0.12
 		
 	def _init_stock(self):
-		print ("init stock")
+		print ("Initializing Stock")
 		
-		rawAboutJson = collector.get_json("/r/{}/about".format(self.stock_name))
-		rawCommentsJson = collector.get_json("/r/{}/comments".format(self.stock_name))
-		rawPostsJson = collector.get_json("/r/{}".format(self.stock_name))
-		rawNewPostsJson = collector.get_json("/r/{}/new".format(self.stock_name))
-
-		comment_freq = collector.get_comment_freq(rawCommentsJson)
-		post_freq = collector.get_post_freq(rawNewPostsJson)
-		upvote_sum = collector.get_upvote_total(rawPostsJson)
-		upvote_avg = collector.get_avg_post_score(rawPostsJson)
-		subscribers = collector.get_subscribers(rawAboutJson)
-		
-		stock = {
+		self._db_stock = {
 			"stock_name": self.stock_name,
-			"stock_value": 10/(comment_freq**0.2)+1000/(post_freq**0.5)+upvote_sum/20000+upvote_avg**0.2+subscribers**0.12,
-			"last_stock_value_update": toolbox.current_utc_time(), #last time the stock's value was updated.
+			"stock_value": -1,
+			"last_stock_value_update": -1, #last time the stock's value was updated.
 			"stock_index": -1, # Placeholder to be implemented later
-			"stock_volume": 0, # Number of stocks traded per day.
-			"last_volume_reset": toolbox.current_utc_time(), # Keeps track of when the last time the volume was reset.
-			"treasury_shares": collector.get_subscribers(rawAboutJson)**0.4*collector.get_active_trader_count()/50, # Total stock available for purchase from bot
-			"issued_shares": collector.get_subscribers(rawAboutJson)**0.4*collector.get_active_trader_count()/50, #Total number of stocks on the market period
-			"last_issued_shares_update": toolbox.current_utc_time() # Keeps track of when the last time the issued_shares was updated.
+			"stock_volume": -1, # Number of stocks traded per day.
+			"last_volume_reset": -1, # Keeps track of when the last time the volume was reset.
+			"treasury_shares": -1, # Total stock available for purchase from bot
+			"issued_shares": -1, #Total number of stocks on the market period
+			"last_issued_shares_update": -1 # Keeps track of when the last time the issued_shares was updated.
 		}
-		#db.stocks.insert_one(stock)
-		return stock
+		
+		#db.stocks.insert_one(self._db_stock)
+		self.reset_volume()
+		self.update_stock_value()
+		self.update_issued_shares()
+		self.treasury_shares = self.issued_shares
 	
 if __name__ == '__main__':
 	stock = Stock('funny')
