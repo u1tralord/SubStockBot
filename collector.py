@@ -25,7 +25,7 @@ def update_stocks():
 	whitelist = pymo.find(db.whitelist, {}) #db.whitelist.find()
 	for subreddit in whitelist:
 		collectSubStats(sub['subreddit'])
-
+		
 def update_stock_properties(subname):
 	db_stock = pymo.find(db.stocks, {'stock_name': subname}) #db.stocks.find_one({'stock_name': subname})
 	if(db_stock is None):
@@ -35,6 +35,7 @@ def update_stock_properties(subname):
 			"stock_index": 1, # Stock's rank vs other stocks
 			"bot_owned_quantity": 10000, # Total stock available for purchase from bot
 			"stock_volume": 10000, # Total stock available on market
+			"issued_shares": get_issued_shares(subname)
 		}
 		db.stocks.insert_one(db_stock)
 
