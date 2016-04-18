@@ -1,6 +1,6 @@
 from wrappers import db as db_wrapper
 from wrappers import pymo
-
+import collector.py
 db = db_wrapper.get_instance()
 
 
@@ -79,17 +79,14 @@ class Stock():
 			self.stock_volume = 0
 			
 def create_stock(stock_name):
-	user = {
+	stock = {
 		"stock_name": stock_name,
-		"stock_value": get_initial_stock_value(),
-		"stock_volume": get_initial_stock_volume()
+		"stock_value": get_stock_value(stock_name),
+		"stock_index": -1, # Placeholder to be implemented later
+		"stock_volume": 0
 	}
-	#db.users.insert_one(user)
-	return user
+	#db.stocks.insert_one(stock)
+	return stock
 	
 def get_initial_stock_value():
 	return 100
-	
-def get_initial_stock_volume():
-	return 100
-	
