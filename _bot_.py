@@ -30,6 +30,7 @@ def respond_to_mentions():
 	print("Retrieving Mentions...")
 	threads = [threading.Thread(target=handle_posts_thread, args=(post,)) for post in reddit.get_mentions()]
 	threads += [threading.Thread(target=handle_posts_thread, args=(post,)) for post in reddit.get_messages()]
+	threads += [threading.Thread(target=handle_posts_thread, args=(post,)) for post in reddit.get_comment_replies()]
 	[thread.start() for thread in threads]
 	[thread.join() for thread in threads]
 	market.match_offers()

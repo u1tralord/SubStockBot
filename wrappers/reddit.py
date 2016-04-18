@@ -62,6 +62,14 @@ def get_unread():
 def get_messages():
 	with oAuthLock:
 		return r.get_messages(limit=None)
+		
+def get_post_replies():
+	with oAuthLock:
+		return r.get_post_replies(limit=None)
+		
+def get_comment_replies():
+	with oAuthLock:
+		return r.get_comment_replies(limit=None)
 
 # Method for standard commenting by the bot. We should add a footer to the bot with a link to the
 # subreddit, and the standard "I AM A BOT" message
