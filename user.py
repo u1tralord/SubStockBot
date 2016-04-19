@@ -83,7 +83,7 @@ class User:
 		self._db_user = db_user
 
 	def write_db(self):
-		print ('writing to db')
+		print('{} User object is writing to the database'.format(user.username))
 		db.users.update_one({'username': self.username}, { '$set': self._db_user }, upsert=True)
 
 	def add_stock(self, stock_name, quantity):

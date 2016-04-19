@@ -39,8 +39,6 @@ def _place_offer(offer_type, username, stock, quantity, unit_bid):
 	})
 
 def place_buy(username, stock, quantity, unit_bid, user):
-	print("{} is buying {} {} stocks at {} kreddit each".format(username, str(quantity), stock, str(unit_bid)))
-	user = User(username)
 	try:
 		user.take_kreddit(float(quantity) * float(unit_bid))
 		_place_offer("buy", username, stock, quantity, unit_bid)
@@ -48,7 +46,6 @@ def place_buy(username, stock, quantity, unit_bid, user):
 		raise ve
 
 def place_sell(username, stock, quantity, unit_bid, user):
-	print("{} is selling {} {} stocks at {} kreddit each".format(username, str(quantity), stock, str(unit_bid)))
 	try:
 		user.take_stock(stock, quantity)
 		_place_offer("sell", username, stock, quantity, unit_bid)
@@ -106,9 +103,9 @@ def make_transfer(buy, sale):
 	seller.add_kreddit(transaction_price)
 	buyer.add_kreddit(buyer_remainder)
 	buyer.add_stock(sale['stock_name'], transaction_quantity)
-	print("Sale {} -> {} for {} of {} stock at {} each (Total: {})".format(seller.username,
-																		   buyer.username,
-																		   transaction_quantity,
-																		   sale['stock_name'],
-																		   sale['unit_bid'],
-																		   transaction_price))
+	print("Transaction complete!\n{} sold {} of {} stock to {} for {} each (Total: {}.)\n".format(	seller.username,
+																									transaction_quantity,
+																									sale['stock_name'],
+																									buyer.username,
+																									sale['unit_bid'],
+																									transaction_price))

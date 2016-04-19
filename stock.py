@@ -114,15 +114,14 @@ class Stock():
 		return self._db_stock['last_issued_shares_update']
 		
 	def update(self):
-		print("FIXME!!! I run twice whenever I should only run once when getting a stocks value!")
-		print("Running stock.update()...dummy method")
 		#self._db_stock = db.stocks.find_one( {'stock_name': self.stock_name})
 		self._db_stock = None #TEMPORARY!!!
 		if self._db_stock is None:
 			self._init_stock()
 		
 	def write_db(self):
-		print("Running write_db...dummy method")
+		print('{} Stock object is writing to the database'.format(user.username))
+		print('~dummy method')
 		#db.stocks.find_one( {'stock_name': self.stock_name}, {'$set': self._db_stock}, upsert=True)
 		
 	def add_value(self, amount):
@@ -163,7 +162,6 @@ class Stock():
 			self.issued_shares = active_traders/10
 		
 	def update_stock_value(self):
-		print ("update_stock_value")
 		rawAboutJson = collector.get_json("/r/{}/about".format(self.stock_name))
 		rawCommentsJson = collector.get_json("/r/{}/comments".format(self.stock_name))
 		rawPostsJson = collector.get_json("/r/{}".format(self.stock_name))
@@ -178,7 +176,7 @@ class Stock():
 		self.stock_value = 10/(comment_freq**0.2)+1000/(post_freq**0.5)+upvote_sum/20000+upvote_avg**0.2+subscribers**0.12
 		
 	def _init_stock(self):
-		print ("Initializing Stock")
+		print ("Initializing Stock '{}'.".format(self.stock_name))
 		
 		self._db_stock = {
 			"stock_name": self.stock_name,

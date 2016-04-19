@@ -66,7 +66,7 @@ def get_comment_replies():
 	return r.get_comment_replies(limit=None)	
 
 def send_message(recipient, subject, message):
-	print(message)
+	print("-Send Message to {}-\n{}\n\n".format(recipient, message))
 	try:
 		r.send_message(recipient, subject, message + FOOTER)
 	except praw.errors.RateLimitExceeded as error:
@@ -82,7 +82,7 @@ def send_message(recipient, subject, message):
 		
 # Method for standard commenting by the bot.
 def reply(redditThing, message):
-	print(message)
+	print("-Send Reply to {}-\n{}\n\n".format(redditThing.author.name, message))
 	try:
 		redditThing.reply(message + FOOTER)
 	except praw.errors.RateLimitExceeded as error:
