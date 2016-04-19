@@ -66,9 +66,9 @@ def get_comment_replies():
 	return r.get_comment_replies(limit=None)	
 
 def send_message(recipient, subject, message):
-	print("-Send Message to {}-\n{}\n\n".format(recipient, message))
+	print("sending message to {}-\n{}\n\n".format(recipient, message))
 	try:
-		r.send_message(recipient, subject, message + FOOTER)
+		r.send_message(recipient, subject, "{}{}".format(message, FOOTER))
 	except praw.errors.RateLimitExceeded as error:
 		print('Rate Limit Exceded')
 		print('Sleeping for %d secconds' % error.sleep_time)
@@ -82,9 +82,9 @@ def send_message(recipient, subject, message):
 		
 # Method for standard commenting by the bot.
 def reply(redditThing, message):
-	print("-Send Reply to {}-\n{}\n\n".format(redditThing.author.name, message))
+	print("sending reply to {}-\n{}\n\n".format(redditThing.author.name, message))
 	try:
-		redditThing.reply(message + FOOTER)
+		redditThing.reply("{}{}".format(message, FOOTER))
 	except praw.errors.RateLimitExceeded as error:
 		print('Rate Limit Exceded')
 		print('Sleeping for %d seconds' % error.sleep_time)

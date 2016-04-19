@@ -106,19 +106,19 @@ def get_orders(args, comment, user):
 	
 	buys = db.market.find({'offer': 'buy', 'username': user.username}).sort("offer_created", 1)
 	sells = db.market.find({'offer': 'sell', 'username': user.username}).sort("offer_created", 1)
-	buyTable = "~+=|You Want to Buy|=+~\n\n\n"
-	buyTable += "Stock Name|Asking Bid|Quantity|Order Id\n" \
-			   ":--|:--|--:|--:\n"
+	buyTable =	"## |You want to Buy|\n\n\n"\
+				"Stock Name|Asking Bid|Quantity|Order Id\n" \
+				":--|:--|--:|--:\n"
 	for buyoffer in buys:
 		buyTable += "{}|{}|{}/{}|{}\n".format(buyoffer['stock_name'], buyoffer['unit_bid'], buyoffer['quantity'], buyoffer['total_quantity'], buyoffer['id'])
-	buyTable += '\n\n\n'
-	sellTable = "~+=|You Want to Sell|=+~\n\n\n"
-	sellTable += "Stock Name|Asking Price|Quantity|Order Id\n" \
+	buyTable += '\n\n\n\n\n'
+	sellTable = "## |You want to Sell|\n\n\n" \
+				"Stock Name|Asking Price|Quantity|Order Id\n" \
 				":--|:--|--:|--:\n"
 	for selloffer in sells:
 		sellTable += "{}|{}|{}/{}|{}\n".format(selloffer['stock_name'], selloffer['unit_bid'], selloffer['quantity'], selloffer['total_quantity'], selloffer['id'])
 		
-	orders_comment = "{}\'s Orders:  \n\n\n".format(user.username) + buyTable + sellTable
+	orders_comment = "#{}\'s Orders:  \n\n".format(user.username) + buyTable + sellTable
 	reddit.reply(comment, orders_comment)
 	
 def cancel_order(args, comment, user):
@@ -150,21 +150,20 @@ def list_all_orders(args, comment, user):
 		
 		sells = db.market.find({'offer': 'sell', 'stock_name': args[1]}).sort("unit_bid", pymongo.ASCENDING)
 		buys = db.market.find({'offer': 'buy', 'stock_name': args[1]}).sort("unit_bid", pymongo.DESCENDING)
-		
-		sellTable = "~+=|People Want to Sell|=+~\n\n\n"
-		sellTable += "Seller|Asking Price|Quantity|Order Id\n" \
+		sellTable =	"## |People Want to Sell|\n\n\n" \
+					"Seller|Asking Price|Quantity|Order Id\n" \
 					":--|:--|--:|--:\n"
 		for selloffer in sells:
 			sellTable += "{}|{}|{}/{}|{}\n".format(selloffer['username'], selloffer['unit_bid'], selloffer['quantity'], selloffer['total_quantity'], selloffer['id'])
 		sellTable += "\n\n\n"
 		
-		buyTable = "~+=|People Want to Buy|=+~\n\n\n"
-		buyTable += "Buyer|Asking Bid|Quantity|Order Id\n" \
-				   ":--|:--|--:|--:\n"
+		buyTable =  "## |People Want to Buy|\n\n\n" \
+					"Buyer|Asking Bid|Quantity|Order Id\n" \
+					":--|:--|--:|--:\n"
 		for buyoffer in buys:
 			buyTable += "{}|{}|{}/{}|{}\n".format(buyoffer['username'], buyoffer['unit_bid'], buyoffer['quantity'], buyoffer['total_quantity'], buyoffer['id'])
 			
-		orders_comment = "Market List: {}  \n\n\n".format(args[1]) + sellTable + buyTable
+		orders_comment = "#Market List: '{}'  \n\n".format(args[1]) + sellTable + buyTable
 		reddit.reply(comment, orders_comment)
 
 commands = {
