@@ -2,8 +2,6 @@ import json
 from wrappers import db as db_wrapper
 from wrappers import reddit
 from wrappers.toolbox import *
-from wrappers import pymo
-from threading import Lock
 
 db = db_wrapper.get_instance()
 
@@ -16,7 +14,7 @@ db = db_wrapper.get_instance()
 '''
 
 whitelist_cache = {
-	'subreddits': pymo.find(db.whitelist, {}), #db.whitelist.find()
+	'subreddits': db.whitelist.find(),
 	'last_updated': current_utc_time()
 }
 
@@ -24,16 +22,12 @@ whitelist_cache = {
 settings = None
 with open("settings.config") as f:
 	settings = json.load(f)
-	
-userLocks = {}
 
 class User:
 	def __init__(self, username):
 		self._username = username
 		self._db_user = None
 		self.update()
-		if username not in userLocks:
-			userLocks.update({username: Lock()})
 	
 	@property
 	def username(self):
@@ -41,54 +35,48 @@ class User:
 		
 	@property
 	def last_active(self):
-		with userLocks[self.username]:
-			if self._db_user == None:
-				self.update()
-			return self._db_user['last_active']
+		if self._db_user == None:
+			self.update()
+		return self._db_user['last_active']
 		
 	@last_active.setter
 	def last_active(self, amount):
-		with userLocks[self.username]:
-			if self._db_user == None:
-				self.update()
-			self._db_user['last_active'] = amount
-			self.write_db()
+		if self._db_user == None:
+			self.update()
+		self._db_user['last_active'] = amount
+		self.write_db()
 	
 	@property
 	def balance(self):
-		with userLocks[self.username]:
-			if self._db_user == None:
-				self.update()
-			return self._db_user['balance']
+		if self._db_user == None:
+			self.update()
+		return self._db_user['balance']
 		
 	@balance.setter
 	def balance(self, amount):
-		with userLocks[self.username]:
-			if self._db_user == None:
-				self.update()
-			self._db_user['balance'] = amount
-			if self._db_user['balance'] < 0:
-				self._db_user['balance'] = 0
-			self.write_db()
+		if self._db_user == None:
+			self.update()
+		self._db_user['balance'] = amount
+		if self._db_user['balance'] < 0:
+			self._db_user['balance'] = 0
+		self.write_db()
 	
 	@property
 	def stocks(self):
-		with userLocks[self.username]:
-			if self._db_user == None:
-				self.update()
-			return self._db_user['stocks']
+		if self._db_user == None:
+			self.update()
+		return self._db_user['stocks']
 		
 	@stocks.setter
 	def stocks(self, list):
-		with userLocks[self.username]:
-			if self._db_user == None:
-				self.update()
-			self._db_user['stocks'] = list
-			self.write_db()
+		if self._db_user == None:
+			self.update()
+		self._db_user['stocks'] = list
+		self.write_db()
 		
 
 	def update(self):
-		db_user = pymo.find_one(db.users, {'username': self.username}) #db.users.find_one({'username': self.username})
+		db_user = db.users.find_one({'username': self.username})
 		if db_user is None:
 			db_user = create_user(self.username)
 		db_user['permission_level'] = get_permission_level(self.username)
@@ -96,11 +84,7 @@ class User:
 
 	def write_db(self):
 		print ('writing to db')
-		pymo.update_one(db.users, 
-			{'username': self.username}, 
-			{ '$set': self._db_user }, 
-			upsert=True
-			) #db.users.update_one({'username': self.username}, { '$set': self._db_user }, upsert=True)
+		db.users.update_one({'username': self.username}, { '$set': self._db_user }, upsert=True)
 
 	def add_stock(self, stock_name, quantity):
 		self.update()
@@ -132,10 +116,9 @@ class User:
 					has_enough_stock = True
 					#Doesn't work...
 					if stock_entry['quantity_owned'] == 0:
-						stock = pymo.find_one(db.users, {'username': self.username})['stocks']
-						with pymo.pymongoLock:
-							stock.pop(self.stocks.index(stock_entry))
-							self.stocks.pop(self.stocks.index(stock_entry))
+						stock = db.users.find_one({'username': self.username})['stocks']
+						stock.pop(self.stocks.index(stock_entry))
+						self.stocks.pop(self.stocks.index(stock_entry))
 						
 			if not has_enough_stock:
 				raise ValueError('Insufficient quantity of stock')
@@ -174,10 +157,10 @@ def get_permission_level(username):
 	return 1
 
 def update_whitelist():
-	whitelist_cache['subreddits'] = pymo.find(db.whitelist, {}) #db.whitelist.find()
+	whitelist_cache['subreddits'] = db.whitelist.find()
 
 def is_whitelisted(subreddit):
-	whitelist = pymo.find(db.whitelist, {}) #db.whitelist.find()
+	whitelist = db.whitelist.find()
 	for sub in whitelist:
 		if sub['subreddit'] == subreddit:
 			return True

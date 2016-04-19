@@ -3,7 +3,6 @@ from wrappers import toolbox
 import market
 from stock import *
 from user import *
-from wrappers import pymo
 import pymongo
 
 '''
@@ -111,8 +110,8 @@ def get_profile(args, comment, user):
 def get_orders(args, comment, user):
 	print("Commenting Orders")
 	username = comment.author.name
-	buys = pymo.find(db.market, {'offer': 'buy', 'username': username}).sort("offer_created", 1) #db.market.find({'offer': 'buy', 'username': username}).sort("offer_created", 1)
-	sells = pymo.find(db.market, {'offer': 'sell', 'username': username}).sort("offer_created", 1) #db.market.find({'offer': 'sell', 'username': username}).sort("offer_created", 1)
+	buys = db.market.find({'offer': 'buy', 'username': username}).sort("offer_created", 1)
+	sells = db.market.find({'offer': 'sell', 'username': username}).sort("offer_created", 1)
 	buyTable = "~+=|You Want to Buy|=+~\n\n\n"
 	buyTable += "Stock Name|Asking Bid|Quantity|Order Id\n" \
 			   ":--|:--|--:|--:\n"
@@ -141,7 +140,7 @@ def cancel_order(args, comment, user):
 		
 		if orderId is not None:
 			try:
-				order = pymo.find_one(db.market, {'id': orderId, 'username': username}) #db.market.find_one({'id': orderId, 'username': username})
+				order = db.market.find_one({'id': orderId, 'username': username})
 				print(str(order['offer']))
 				if order['offer'] == 'sell':
 					reddit.reply(comment, "Canceled {} order Id: {} for {} kreddits. You have reclaimed {} shares of {} stock.".format(order['offer'], order['id'], order['unit_bid'], order['quantity'], order['stock_name']))
@@ -158,8 +157,8 @@ def list_all_orders(args, comment, user):
 	if len(args) >= 2:
 		print("Commenting Market List")
 		username = comment.author.name
-		sells = pymo.find(db.market, {'offer': 'sell', 'stock_name': args[1]}).sort("unit_bid", pymongo.ASCENDING) #db.market.find({'offer': 'sell', 'stock_name': args[1]}).sort("unit_bid", pymongo.ASCENDING)
-		buys = pymo.find(db.market, {'offer': 'buy', 'stock_name': args[1]}).sort("unit_bid", pymongo.DESCENDING)  #db.market.find({'offer': 'buy', 'stock_name': args[1]}).sort("unit_bid", pymongo.DESCENDING)
+		sells = db.market.find({'offer': 'sell', 'stock_name': args[1]}).sort("unit_bid", pymongo.ASCENDING)
+		buys = db.market.find({'offer': 'buy', 'stock_name': args[1]}).sort("unit_bid", pymongo.DESCENDING)
 		
 		sellTable = "~+=|People Want to Sell|=+~\n\n\n"
 		sellTable += "Seller|Asking Price|Quantity|Order Id\n" \

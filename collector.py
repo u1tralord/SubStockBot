@@ -4,7 +4,6 @@ import json
 import pprint
 from wrappers import db as db_wrapper
 from wrappers import toolbox
-from wrappers import pymo
 
 db = db_wrapper.get_instance()
 
@@ -27,12 +26,12 @@ def get_json(path, after=None):
 #    Leaving them in just in case...
 '''
 def update_stocks():
-	whitelist = pymo.find(db.whitelist, {}) #db.whitelist.find()
+	whitelist = db.whitelist.find()
 	for subreddit in whitelist:
 		collectSubStats(sub['subreddit'])
 		
 def update_stock_properties(subname):
-	db_stock = pymo.find(db.stocks, {'stock_name': subname}) #db.stocks.find_one({'stock_name': subname})
+	db_stock = db.stocks.find_one({'stock_name': subname})
 	if(db_stock is None):
 		db_stock = {
 			"stock_name": subname,
@@ -49,7 +48,7 @@ def update_stock_properties(subname):
 	##
 	# Do stuff here to modify stock properties
 	##
-	pymo.update_one(db.stocks, {'stock_name': subname}, {'$set': db_stock}, upsert=True) #db.stocks.update_one({'stock_name': subname}, {'$set': db_stock}, upsert=True)
+	db.stocks.update_one({'stock_name': subname}, {'$set': db_stock}, upsert=True)
 '''
 
 #Returns an integer value representing the number of subscribers to a sub.
@@ -58,7 +57,7 @@ def get_subscribers(rawAboutJson):
 	return rawAboutJson['data']['subscribers']
 	
 def get_active_trader_count():
-	users = pymo.find(db.users, {})
+	users = db.users.find()
 	active_users = 0
 	currentUTC = toolbox.current_utc_time()
 	for user in users:

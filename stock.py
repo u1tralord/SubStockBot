@@ -1,22 +1,15 @@
 from wrappers import db as db_wrapper
-from wrappers import pymo
 from wrappers import toolbox
-from threading import Lock
 import collector
 
 
 
 db = db_wrapper.get_instance()
 
-stockLocks = {}
-
 class Stock():
 	def __init__(self, stock_name):
 		self._stock_name = stock_name
 		self._db_stock = None
-		
-		if stock_name not in stockLocks:
-			stockLocks.update({stock_name: Lock()})
 		
 		self.update()
 		
@@ -26,124 +19,111 @@ class Stock():
 		
 	@property
 	def stock_value(self):
-		with stockLocks[self.stock_name]:
-			if self._db_stock == None:
-				self.update()
-			return self._db_stock['stock_value']
+		if self._db_stock == None:
+			self.update()
+		return self._db_stock['stock_value']
 		
 	@stock_value.setter
 	def stock_value(self, amount):
-		with stockLocks[self.stock_name]:
-			if self._db_stock == None:
-				self.update()
-			self._db_stock['last_stock_value_update'] = toolbox.current_utc_time()
-			self._db_stock['stock_value'] = amount
-			if self._db_stock['stock_value'] < 0:
-				self._db_stock['stock_value'] = 0
-			self.write_db()
+		if self._db_stock == None:
+			self.update()
+		self._db_stock['last_stock_value_update'] = toolbox.current_utc_time()
+		self._db_stock['stock_value'] = amount
+		if self._db_stock['stock_value'] < 0:
+			self._db_stock['stock_value'] = 0
+		self.write_db()
 		
 	@property
 	def last_stock_value_update(self):
-		with stockLocks[self.stock_name]:
-			if self._db_stock == None:
-				self.update()
-			return self._db_stock['last_stock_value_update']
+		if self._db_stock == None:
+			self.update()
+		return self._db_stock['last_stock_value_update']
 		
 	@property
 	def stock_index(self):
-		with stockLocks[self.stock_name]:
-			if self._db_stock == None:
-				self.update()
-			return self._db_stock['stock_index']
+		if self._db_stock == None:
+			self.update()
+		return self._db_stock['stock_index']
 		
 	@stock_index.setter
 	def stock_index(self, amount):
-		with stockLocks[self.stock_name]:
-			if self._db_stock == None:
-				self.update()
-			self._db_stock['stock_index'] = amount
-			if self._db_stock['stock_index'] < 0:
-				self._db_stock['stock_index'] = 0
-			self.write_db()
+		if self._db_stock == None:
+			self.update()
+		self._db_stock['stock_index'] = amount
+		if self._db_stock['stock_index'] < 0:
+			self._db_stock['stock_index'] = 0
+		self.write_db()
 		
 	@property
 	def stock_volume(self):
-		with stockLocks[self.stock_name]:
-			if self._db_stock == None:
-				self.update()
-			return self._db_stock['stock_volume']
+		if self._db_stock == None:
+			self.update()
+		return self._db_stock['stock_volume']
 		
 	@stock_volume.setter
 	def stock_volume(self, amount):
-		with stockLocks[self.stock_name]:
-			if self._db_stock == None:
-				self.update()
-			self._db_stock['stock_volume'] = amount
-			if self._db_stock['stock_volume'] <= 0:
-				self._db_stock['stock_volume'] = 0
-				self._db_stock['last_volume_reset'] = toolbox.current_utc_time()
-			self.write_db()
+		if self._db_stock == None:
+			self.update()
+		self._db_stock['stock_volume'] = amount
+		if self._db_stock['stock_volume'] <= 0:
+			self._db_stock['stock_volume'] = 0
+			self._db_stock['last_volume_reset'] = toolbox.current_utc_time()
+		self.write_db()
 		
 	@property
 	def last_volume_reset(self):
-		with stockLocks[self.stock_name]:
-			if self._db_stock == None:
-				self.update()
-			return self._db_stock['last_volume_reset']
+		if self._db_stock == None:
+			self.update()
+		return self._db_stock['last_volume_reset']
 		
 	@property
 	def treasury_shares(self):
-		with stockLocks[self.stock_name]:
-			if self._db_stock == None:
-				self.update()
-			return self._db_stock['treasury_shares']
+		if self._db_stock == None:
+			self.update()
+		return self._db_stock['treasury_shares']
 		
 	@treasury_shares.setter
 	def treasury_shares(self, amount):
-		with stockLocks[self.stock_name]:
-			if self._db_stock == None:
-				self.update()
-			self._db_stock['treasury_shares'] = amount
-			if self._db_stock['treasury_shares'] < 0:
-				self._db_stock['treasury_shares'] = 0
-			self.write_db()
+		if self._db_stock == None:
+			self.update()
+		self._db_stock['treasury_shares'] = amount
+		if self._db_stock['treasury_shares'] < 0:
+			self._db_stock['treasury_shares'] = 0
+		self.write_db()
 		
 	@property
 	def issued_shares(self):
-		with stockLocks[self.stock_name]:
-			if self._db_stock == None:
-				self.update()
-			return self._db_stock['issued_shares']
+		if self._db_stock == None:
+			self.update()
+		return self._db_stock['issued_shares']
 		
 	@issued_shares.setter
 	def issued_shares(self, amount):
-		with stockLocks[self.stock_name]:
-			if self._db_stock == None:
-				self.update()
-			self._db_stock['last_issued_shares_update'] = toolbox.current_utc_time()
-			self._db_stock['issued_shares'] = amount
-			if self._db_stock['issued_shares'] < 0:
-				self._db_stock['issued_shares'] = 0
-			self.write_db()
+		if self._db_stock == None:
+			self.update()
+		self._db_stock['last_issued_shares_update'] = toolbox.current_utc_time()
+		self._db_stock['issued_shares'] = amount
+		if self._db_stock['issued_shares'] < 0:
+			self._db_stock['issued_shares'] = 0
+		self.write_db()
 			
 	@property
 	def last_issued_shares_update(self):
-		with stockLocks[self.stock_name]:
-			if self._db_stock == None:
-				self.update()
-			return self._db_stock['last_issued_shares_update']
+		if self._db_stock == None:
+			self.update()
+		return self._db_stock['last_issued_shares_update']
 		
 	def update(self):
 		print("FIXME!!! I run twice whenever I should only run once when getting a stocks value!")
 		print("Running stock.update()...dummy method")
-		#self._db_stock = pymo.find_one(db.stocks, {'stock_name': self.stock_name})
+		#self._db_stock = db.stocks.find_one( {'stock_name': self.stock_name})
 		self._db_stock = None #TEMPORARY!!!
 		if self._db_stock is None:
 			self._init_stock()
 		
 	def write_db(self):
 		print("Running write_db...dummy method")
-		#pymo.update_one(db.stocks, {'stock_name': self.stock_name}, {'$set': self._db_stock}, upsert=True)
+		#db.stocks.find_one( {'stock_name': self.stock_name}, {'$set': self._db_stock}, upsert=True)
 		
 	def add_value(self, amount):
 		self.stock_value += amount

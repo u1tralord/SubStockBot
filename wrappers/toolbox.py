@@ -3,7 +3,7 @@ import json
 import array
 import math
 import hashlib
-from threading import Timer, Lock
+from threading import Timer
 
 '''
 	This is the generic function module.
