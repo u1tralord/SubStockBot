@@ -37,22 +37,23 @@ def main_loop():
 	while True:
 		startUTC = current_utc_time()
 		
-		print("+Retrieving Posts+\n")
+		print("      +Retrieving Posts+")
 		posts = [post for post in reddit.get_mentions()]
 		posts += [post for post in reddit.get_messages()]
 		posts += [post for post in reddit.get_comment_replies()]
-		print("\nIt took {} seconds to retrieve posts.\n".format(current_utc_time() - startUTC))
+		print("\nIt took {} seconds to retrieve posts.".format(current_utc_time() - startUTC))
+		print("---------------------------------------\n")
 		
 		starthandleUTC = current_utc_time()
 		print("+Handling Posts+")
 		[handle_posts(post) for post in posts]
-		print("\nIt took {} seconds to handle all posts\n".format(current_utc_time() - starthandleUTC))
-		
-		print("\nIt took {} seconds to retrieve and handle all posts in total\n".format(current_utc_time() - startUTC))
+		print("\nIt took {} seconds to handle all posts".format(current_utc_time() - starthandleUTC))
+		print("----------------------------------------\n")
 		
 		market.match_offers()
 		
-		print("\nIt took {} seconds in total to fully process all tasks\n".format(current_utc_time() - startUTC))
+		print("\nIt took {} seconds in total to fully process all tasks".format(current_utc_time() - startUTC))
+		print("----------------------------------------\n\n")
 		
 		while current_utc_time() - startUTC < 30:
 			time.sleep(0.1)

@@ -46,24 +46,25 @@ def is_mod(username, subreddit):
 	return mod_status
 
 def get_mentions():
-	print("Getting Mentions...")
+	print("    ...Getting Mentions...")
 	return r.get_mentions(limit=None)	
 	
 def get_unread():
-	print("Getting Unread...")
+	print("     ...Getting Unread...")
 	return r.get_unread(limit=None, unset_has_mail=True)	
 	
 def get_messages():
-	print("Getting Messages...")
+	print("    ...Getting Messages...")
 	return r.get_messages(limit=None)
 		
 def get_post_replies():
-	print("Getting Post Replies...")
+	print("   ...Getting Post Replies...")
 	return r.get_post_replies(limit=None)
 		
 def get_comment_replies():
-	print("Getting Comment Replies...")
-	return r.get_comment_replies(limit=None)	
+	print(" ...Getting Comment Replies...")
+	return r.get_comment_replies(limit=None)
+	
 
 def send_message(recipient, subject, message):
 	print("sending message to {}-\n{}\n\n".format(recipient, message))

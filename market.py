@@ -53,7 +53,7 @@ def place_sell(username, stock, quantity, unit_bid, user):
 		raise ve
 
 def match_offers():
-	print("Matching offers")
+	print("+Matching offers+")
 	#Orders to buy a stock for x kreddits sorted from lowest to highest
 	buys = db.market.find({'offer': 'buy'}).sort("unit_bid", pymongo.ASCENDING)
 	for buy in buys:
