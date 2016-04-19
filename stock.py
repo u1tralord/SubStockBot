@@ -173,10 +173,7 @@ class Stock():
 			self.treasury_shares = 0
 			
 	def reset_volume(self):
-		if self._db_stock == None:
-			self.update()
 		self.stock_volume = 0
-		self.write_db()
 
 	def update_issued_shares(self):
 		rawAboutJson = collector.get_json("/r/{}/about".format(self.stock_name))

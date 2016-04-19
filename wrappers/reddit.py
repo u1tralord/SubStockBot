@@ -3,6 +3,8 @@ import json
 import OAuth2Util
 from threading import Timer, Lock
 from wrappers.toolbox import*
+import time
+import random
 
 '''
 	Reddit wrapper class
@@ -41,8 +43,13 @@ def refresh_OAuth(coerce=True):
 repeat_task(3500, refresh_OAuth)
 
 def get_moderators(subreddit):
+	print("FIXME!!! I am manipulating a private variable when I shouldn't be.")
+	print("--I am get_moderators() in reddit.py")
+	r._use_oauth = False
 	with oAuthLock:
-		return r.get_moderators(r.get_subreddit(subreddit))
+		modlist = r.get_moderators(r.get_subreddit(subreddit))
+		#time.sleep(.5)
+		return modlist
 
 def is_mod(username, subreddit):
 	mod_status = False
@@ -52,55 +59,57 @@ def is_mod(username, subreddit):
 	return mod_status
 
 def get_mentions():
+	print("Getting Mentions...")
 	with oAuthLock:
-		return r.get_mentions(limit=None)
+		return r.get_mentions(limit=None)	
 	
 def get_unread():
+	print("Getting Unread...")
 	with oAuthLock:
-		return r.get_unread(limit=None, unset_has_mail=True)
+		return r.get_unread(limit=None, unset_has_mail=True)	
 	
 def get_messages():
+	print("Getting Messages...")
 	with oAuthLock:
 		return r.get_messages(limit=None)
 		
 def get_post_replies():
+	print("Getting Post Replies...")
 	with oAuthLock:
 		return r.get_post_replies(limit=None)
 		
 def get_comment_replies():
+	print("Getting Comment Replies...")
 	with oAuthLock:
-		return r.get_comment_replies(limit=None)
+		return r.get_comment_replies(limit=None)	
 
-# Method for standard commenting by the bot. We should add a footer to the bot with a link to the
-# subreddit, and the standard "I AM A BOT" message
-def reply_comment(comment, message):
-	try:
-		with oAuthLock:
-			comment.reply(message + FOOTER)
-		print(message)
-	except praw.errors.RateLimitExceeded as error:
-		print('Rate Limit Exceded')
-		print('Sleeping for %d seconds' % error.sleep_time)
-		Timer(error.sleep_time+1, reply_comment, (comment, message)).start()
-		
 def send_message(recipient, subject, message):
-	try:
-		with oAuthLock:
+	print(message)
+	with oAuthLock:
+		try:
+			print("FIXME!!! I am manipulating a private variable when I shouldn't be.")
+			print("--I am send_message() in reddit.py")
+			r._use_oauth = False # Can be removed after we get rid of multi-threading.
 			r.send_message(recipient, subject, message + FOOTER)
-		print (message)
-	except praw.errors.RateLimitExceeded as error:
-		print('Rate Limit Exceded')
-		print('Sleeping for %d secconds' % error.sleep_time)
-		Timer(error.sleep_time+1, send_message, (recipient, subject, message)).start()
-	
+			#time.sleep(.5)
+		except praw.errors.RateLimitExceeded as error:
+			print('Rate Limit Exceded')
+			print('Sleeping for %d secconds' % error.sleep_time)
+			Timer(error.sleep_time+1, send_message, (recipient, subject, message)).start()
+		
 # Method for standard commenting by the bot.
 def reply(redditThing, message):
-	try:
-		with oAuthLock:
+	print(message)
+	with oAuthLock:
+		try:
+			print("FIXME!!! I am manipulating a private variable when I shouldn't be.")
+			print("--I am reply() in reddit.py")
+			r._use_oauth = False # Can be removed after we get rid of multi-threading.
 			redditThing.reply(message + FOOTER)
-		print(message)
-	except praw.errors.RateLimitExceeded as error:
-		print('Rate Limit Exceded')
-		print('Sleeping for %d seconds' % error.sleep_time)
-		Timer(error.sleep_time, reply, (redditThing, message)).start()
+			#time.sleep(.5)
+		except praw.errors.RateLimitExceeded as error:
+			print('Rate Limit Exceded')
+			print('Sleeping for %d seconds' % error.sleep_time)
+			Timer(error.sleep_time, reply, (redditThing, message)).start()
+		
 
