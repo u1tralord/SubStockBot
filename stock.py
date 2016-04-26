@@ -188,6 +188,7 @@ class Stock():
 			"treasury_shares": -1, # Total stock available for purchase from bot
 			"issued_shares": -1, #Total number of stocks on the market period
 			"last_issued_shares_update": -1 # Keeps track of when the last time the issued_shares was updated.
+			"dividend_payout": -1 # Just in case we ever want to add a dividend payout per stock in the future.
 		}
 		
 		#db.stocks.insert_one(self._db_stock)
