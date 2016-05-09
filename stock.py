@@ -6,7 +6,7 @@ import collector
 
 db = db_wrapper.get_instance()
 
-class Stock():
+class Stock(object):
 	def __init__(self, stock_name):
 		self._stock_name = stock_name
 		self._db_stock = None
