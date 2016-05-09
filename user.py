@@ -23,7 +23,7 @@ settings = None
 with open("settings.config") as f:
 	settings = json.load(f)
 
-class User:
+class User(object):
 	def __init__(self, username):
 		self._username = username
 		self._db_user = None
